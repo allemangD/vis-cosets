@@ -17,38 +17,15 @@ class CosetsWindow : public Window {
 
 public:
    void init() override {
-      auto vs = build_shader(GL_VERTEX_SHADER, "vertex",
-         "#version 400\n"
-         ""
-         "uniform mat4 proj;"
-         ""
-         "in vec4 pos;"
-         "out vec4 v;"
-         ""
-         "void main(){"
-         "  v = pos;"
-         ""
-         "  /* stereographic projection */"
-         "  vec4 vert = vec4(pos.xyz / (1 - pos.w), 1);"
-         "  gl_Position = proj * vert;"
-         "}");
+      auto vs = build_shader_file(
+         GL_VERTEX_SHADER,
+         "vertex",
+         "shaders/main.vs.glsl");
 
-      auto fs = build_shader(GL_FRAGMENT_SHADER, "fragment",
-         "#version 400\n"
-         ""
-         "in vec4 v;"
-         ""
-         "vec3 hsv2rgb(vec3 c)\n"
-         "{\n"
-         "    vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);\n"
-         "    vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);\n"
-         "    return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);\n"
-         "}"
-         ""
-         "void main(){"
-         "  gl_FragColor = vec4(hsv2rgb(vec3(v.w, 1, 1)), 0);"
-         "}"
-      );
+      auto fs = build_shader_file(
+         GL_FRAGMENT_SHADER,
+         "fragment",
+         "shaders/main.fs.glsl");
 
       program = build_program("main", vs, fs);
 

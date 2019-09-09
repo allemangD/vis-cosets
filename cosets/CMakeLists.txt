@@ -8,3 +8,10 @@ target_link_libraries(${PROJECT_NAME}
 
 target_include_directories(${PROJECT_NAME}
         PRIVATE include)
+
+add_custom_command(
+    TARGET cosets POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/shaders
+            ${CMAKE_CURRENT_BINARY_DIR}/shaders
+)

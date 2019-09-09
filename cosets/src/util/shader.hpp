@@ -5,6 +5,8 @@
 #include <cstdio>
 #include <cstdlib>
 
+#include "files.hpp"
+
 GLint build_shader(GLenum type, const std::string &name, const std::string &src) {
    const char *c_str = src.c_str();
 
@@ -26,6 +28,11 @@ GLint build_shader(GLenum type, const std::string &name, const std::string &src)
    }
 
    return s;
+}
+
+GLint build_shader_file(GLenum type, const std::string &name, const std::string &file) {
+   std::string src = read_all_text(file);
+   return build_shader(type, name, src);
 }
 
 GLint build_program(const std::string &name, GLint vs, GLint fs) {
