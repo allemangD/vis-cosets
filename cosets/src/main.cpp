@@ -115,6 +115,9 @@ class CosetsWindow : public Window {
    GLint program;
    GLuint tri;
 
+   GLuint verts;
+   static const unsigned VERTS_N = 8;
+
 public:
    void init() override {
       auto vs = build_shader(GL_VERTEX_SHADER, "vertex",
@@ -122,22 +125,59 @@ public:
          ""
          "uniform mat4 proj;"
          ""
+         "in vec4 pos;"
+         "out vec4 v;"
+         ""
          "void main(){"
-         "  float x = gl_VertexID % 2;"
-         "  float y = gl_VertexID / 2;"
-         "  gl_Position = proj * vec4(x, y, 0, 1);"
+         "  v = pos;"
+         ""
+         "  /* stereographic projection */"
+         "  vec4 vert = vec4(pos.xyz / (1 - pos.w), 1);"
+         "  gl_Position = proj * vert;"
          "}");
 
       auto fs = build_shader(GL_FRAGMENT_SHADER, "fragment",
          "#version 400\n"
+         ""
+         "in vec4 v;"
+         ""
+         "vec3 hsv2rgb(vec3 c)\n"
+         "{\n"
+         "    vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);\n"
+         "    vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);\n"
+         "    return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);\n"
+         "}"
+         ""
          "void main(){"
-         "  gl_FragColor = vec4(0, 1, 1, 0);"
+         "  gl_FragColor = vec4(hsv2rgb(vec3(v.w, 1, 1)), 0);"
          "}"
       );
 
       program = build_program("main", vs, fs);
 
+      float verts_data[4 * VERTS_N]{
+         +.5f, +.5f, 0.f, 0.f,
+         +.5f, -.5f, 0.f, 0.f,
+         -.5f, -.5f, 0.f, -.1f,
+         -.5f, +.5f, 0.f, -.1f,
+
+         +.5f, +.5f, 0.f, .1f,
+         +.5f, -.5f, 0.f, .1f,
+         -.5f, -.5f, 0.2f, .0f,
+         -.5f, +.5f, 0.2f, .0f,
+      };
+
+      glGenBuffers(1, &verts);
+      glBindBuffer(GL_ARRAY_BUFFER, verts);
+      glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 4 * VERTS_N, verts_data, GL_STATIC_DRAW);
+
+
       glGenVertexArrays(1, &tri);
+      glBindVertexArray(tri);
+      glBindBuffer(GL_ARRAY_BUFFER, verts);
+      glEnableVertexAttribArray(0);
+      glVertexAttribPointer(0, 4, GL_FLOAT, false, 0, nullptr);
+      glBindBuffer(GL_ARRAY_BUFFER, 0);
    }
 
    void render() override {
@@ -164,7 +204,7 @@ public:
       glPointSize(10.f);
 
       glBindVertexArray(tri);
-      glDrawArrays(GL_POINTS, 0, 3);
+      glDrawArrays(GL_POINTS, 0, VERTS_N);
 
       swapbuffers();
    }
