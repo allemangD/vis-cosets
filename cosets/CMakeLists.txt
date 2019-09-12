@@ -15,3 +15,5 @@ add_custom_command(
             ${CMAKE_CURRENT_SOURCE_DIR}/src/shaders
             ${CMAKE_CURRENT_BINARY_DIR}/shaders
 )
+
+add_executable(coxeter src/tc.cpp)
