@@ -1,6 +1,11 @@
 #include <iostream>
 #include <vector>
 
+struct Row;
+
+template<int N>
+struct Table;
+
 struct Row {
    std::vector<int>::const_iterator l;
    std::vector<int>::const_iterator r;
@@ -16,6 +21,16 @@ struct Row {
    }
 };
 
+template<int N>
+struct Table {
+   std::vector<std::vector<int>> fwd;
+   std::vector<std::vector<int>> rev;
+
+   void add_row() {
+      fwd.push_back(std::vector<int>(N));
+   }
+};
+
 std::ostream &operator<<(std::ostream &out, const Row &row) {
    out << "[ " << row.from << " | ";
    auto it = row.l;
@@ -27,6 +42,28 @@ std::ostream &operator<<(std::ostream &out, const Row &row) {
    return out;
 }
 
+template<int N>
+std::ostream &operator<<(std::ostream &out, const Table<N> &table) {
+   out << "[";
+   for (int j = 0; j < table.fwd.size(); ++j) {
+      auto arr = table.fwd[j];
+      out << "[";
+      for (int i = 0; i < N; ++i) {
+         out << arr[i];
+
+         if (i < N - 1)
+            out << " ";
+      }
+
+      out << "]";
+      if (j < table.fwd.size() - 1)
+         out << "\n ";
+   }
+   out << "]\n";
+
+   return out;
+}
+
 int main(int argc, char *argv[]) {
    int gens = 2;
    std::vector<std::vector<int>> ids{
@@ -35,28 +72,12 @@ int main(int argc, char *argv[]) {
       {0, 1, 0, 1, 0, 1}
    };
 
-   std::vector<int> &id = ids[2];
-   Row row(id, 8, 9);
-
-   std::cout << row << std::endl;
-
-   row.l++;
-   row.from = 6;
-
-   std::cout << row << std::endl;
-
-//   std::vector<std::vector<char>> vecs{
-//      {'a', 'o', 'e', 'u'},
-//      {'p'},
-//      {'q', 'j', 'k'},
-//   };
-//
-//   for (const auto& vec : vecs) {
-//      for (const auto& ch : vec) {
-//         std::cout << ch;
-//      }
-//      std::cout << std::endl;
-//   }
+   Table<3> table;
+   table.add_row();
+   table.add_row();
+   table.add_row();
+   table.add_row();
+   std::cout << table;
 
    return 0;
 }
