@@ -52,34 +52,35 @@ struct Table {
    }
 
    std::vector<std::vector<int>> words() {
-      std::vector<std::vector<int> *> vecs(size());
-      vecs[0] = new std::vector<int>();
+      std::vector<std::vector<int>> vecs(size());
+      std::vector<bool> done_vecs(size());
+      done_vecs[0] = true;
 
-      while (std::find(vecs.begin(), vecs.end(), nullptr) != vecs.end()) {
+      bool done = false;
+      while (!done) {
+         done = true;
+
          for (int from = 0; from < (int) vecs.size(); ++from) {
-            std::vector<int> *word = vecs[from];
-            if (word == nullptr) {
+            if (done_vecs[from]) {
+               done = false;
                continue;
             }
+            std::vector<int> word = vecs[from];
 
             for (int gen = 0; gen < (int) N; ++gen) {
                int to = get(from, gen);
-               if (vecs[to] != nullptr) {
+               if (done_vecs[to]) {
                   continue;
                }
 
-               vecs[to] = new std::vector<int>(*word);
-               vecs[to]->push_back(gen);
+               done_vecs[to] = true;
+               vecs[to].assign(word.size() + 1, gen);
+               std::copy(word.begin(), word.end(), vecs[to].begin());
             }
          }
       }
 
-      std::vector<std::vector<int>> res(size());
-      for (int i = 0; i < (int) size(); ++i) {
-         res[i] = *vecs[i];
-      }
-
-      return res;
+      return vecs;
    }
 };
 
