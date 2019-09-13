@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <iomanip>
+#include <algorithm>
 #include <cmath>
 
 
@@ -48,6 +49,37 @@ struct Table {
 
    [[nodiscard]] int rget(int gen, int to) const {
       return rev[to][gen];
+   }
+
+   std::vector<std::vector<int>> words() {
+      std::vector<std::vector<int> *> vecs(size());
+      vecs[0] = new std::vector<int>();
+
+      while (std::find(vecs.begin(), vecs.end(), nullptr) != vecs.end()) {
+         for (int from = 0; from < (int) vecs.size(); ++from) {
+            std::vector<int> *word = vecs[from];
+            if (word == nullptr) {
+               continue;
+            }
+
+            for (int gen = 0; gen < (int) N; ++gen) {
+               int to = get(from, gen);
+               if (vecs[to] != nullptr) {
+                  continue;
+               }
+
+               vecs[to] = new std::vector<int>(*word);
+               vecs[to]->push_back(gen);
+            }
+         }
+      }
+
+      std::vector<std::vector<int>> res(size());
+      for (int i = 0; i < (int) size(); ++i) {
+         res[i] = *vecs[i];
+      }
+
+      return res;
    }
 };
 
@@ -104,29 +136,6 @@ std::ostream &operator<<(std::ostream &out, const Row &row) {
    return out;
 }
 
-std::ostream &operator<<(std::ostream &out, const Table &table) {
-   int k = ceil(log10(table.size()));
-
-   out << "[";
-   for (unsigned j = 0; j < table.size(); ++j) {
-      auto arr = table.fwd[j];
-      out << " " << std::setw(k) << j << " [";
-      for (int i = 0; i < table.N; ++i) {
-         out << arr[i];
-
-         if (i < table.N - 1)
-            out << " ";
-      }
-
-      out << "]";
-      if (j < table.fwd.size() - 1)
-         out << "\n ";
-   }
-   out << "]\n";
-
-   return out;
-}
-
 Table *solve(int gens, const std::vector<int> &subgens, const std::vector<std::vector<int>> &rels) {
    auto *table = new Table(gens);
 
@@ -163,6 +172,29 @@ Table *solve(int gens, const std::vector<int> &subgens, const std::vector<std::v
    return table;
 }
 
+std::ostream &operator<<(std::ostream &out, const Table &table) {
+   int k = ceil(log10(table.size()));
+
+   out << "[";
+   for (unsigned j = 0; j < table.size(); ++j) {
+      auto arr = table.fwd[j];
+      out << " " << std::setw(k) << j << " [";
+      for (int i = 0; i < table.N; ++i) {
+         out << arr[i];
+
+         if (i < table.N - 1)
+            out << " ";
+      }
+
+      out << "]";
+      if (j < table.fwd.size() - 1)
+         out << "\n ";
+   }
+   out << "]\n";
+
+   return out;
+}
+
 int main(int argc, char *argv[]) {
    std::vector<std::vector<int>> ids{
       {0, 0},
@@ -173,10 +205,18 @@ int main(int argc, char *argv[]) {
       {0, 2, 0, 2}
    };
 
-   Table *table = solve(3, {}, ids);
+   Table *table = solve(3, {0, 1}, ids);
 
    std::cout << table->size() << std::endl;
    std::cout << *table << std::endl;
+
+   for (const auto &v : table->words()) {
+      std::cout << "[ ";
+      for (auto e : v) {
+         std::cout << e << " ";
+      }
+      std::cout << "]\n";
+   }
 
    return 0;
 }
