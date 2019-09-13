@@ -20,10 +20,10 @@ struct Table {
    }
 
    int add_coset() {
-      for (int from = 0; from < size(); ++from) {
+      for (int from = 0; from < (int) size(); ++from) {
          for (int gen = 0; gen < N; ++gen) {
             if (get(from, gen) < 0) {
-               int to = size();
+               int to = (int) size();
                add_row();
                set(from, gen, to);
                return to;
