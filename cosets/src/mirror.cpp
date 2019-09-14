@@ -3,6 +3,13 @@
 #include <iostream>
 #include <glm/glm.hpp>
 #include <glm/gtx/string_cast.hpp>
+#include <iomanip>
+
+glm::vec4 round(glm::vec4 f, int prec) {
+   auto dec = (float) pow(10, prec);
+   auto res = glm::trunc(f * dec + 0.5f) / dec;
+   return res;
+}
 
 template<int N>
 using vecn = glm::vec<N, float, glm::defaultp>;
@@ -16,7 +23,7 @@ float dot(int n, glm::vec4 a, glm::vec4 b) {
 }
 
 template<int N>
-std::vector<glm::vec4> mirror(const float (&arr)[N - 1][N - 1]) {
+std::vector<glm::vec4> mirror(const float (&arr)[N][N]) {
    static_assert(1 <= N and N <= 4, "Vector size is unsupported");
 
    std::vector<glm::vec4> mirrors{};
@@ -24,11 +31,7 @@ std::vector<glm::vec4> mirror(const float (&arr)[N - 1][N - 1]) {
       glm::vec4 vp{};
       for (int m = 0; m < p; ++m) {
          glm::vec4 vq = mirrors[m];
-         float a = cos(M_PI / arr[p-1][m]);
-         float b = dot(m, vp, vq);
-         float c = vq[m];
-         float d = a - b / c;
-         vp[m] = d;
+         vp[m] = (cos(M_PI / arr[p][m]) - dot(m, vp, vq)) / vq[m];
       }
       vp[p] = std::sqrt(1 - glm::dot(vp, vp));
 
@@ -39,15 +42,15 @@ std::vector<glm::vec4> mirror(const float (&arr)[N - 1][N - 1]) {
          }
       }
 
-      mirrors[p] = vp;
+      mirrors.push_back(round(vp, 15));
    }
 
    return mirrors;
 }
 
 int main(int argc, char *argv[]) {
-   int planes = 3;
-   auto normals = mirror<3>((float[2][2]) {
+   auto normals = mirror<3>({
+      {},
       {4},
       {2, 3}
    });
