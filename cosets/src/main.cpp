@@ -5,6 +5,9 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <vector>
+
+#include "util/mesh.hpp"
 
 using namespace std;
 
@@ -13,7 +16,7 @@ class CosetsWindow : public Window {
    GLuint tri;
 
    GLuint verts;
-   static const unsigned VERTS_N = 8;
+   std::vector<glm::vec4> verts_data;
 
 public:
    void init() override {
@@ -29,21 +32,16 @@ public:
 
       program = build_program("main", vs, fs);
 
-      glm::vec4 verts_data[VERTS_N]{
-         {+0.5, +0.5, +0.5, +0.0},
-         {+0.5, -0.5, +0.5, +0.0},
-         {-0.5, -0.5, +0.5, +0.0},
-         {-0.5, +0.5, +0.5, +0.0},
-
-         {+0.5, +0.5, +0.5, -0.5},
-         {+0.5, -0.5, +0.5, -0.5},
-         {-0.5, -0.5, +0.5, +0.5},
-         {-0.5, +0.5, +0.5, +0.5},
-      };
+      verts_data = vertices<3>({}, Multiplicites<3>({
+         {0, 1, 4},
+         {1, 2, 3}
+      }), {
+         2.0f, .05f, 0.05f
+      });
 
       glGenBuffers(1, &verts);
       glBindBuffer(GL_ARRAY_BUFFER, verts);
-      glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 4 * VERTS_N, verts_data, GL_STATIC_DRAW);
+      glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec4) * verts_data.size(), &verts_data[0], GL_STATIC_DRAW);
 
 
       glGenVertexArrays(1, &tri);
@@ -78,7 +76,7 @@ public:
       glPointSize(10.f);
 
       glBindVertexArray(tri);
-      glDrawArrays(GL_POINTS, 0, VERTS_N);
+      glDrawArrays(GL_POINTS, 0, verts_data.size());
 
       swapbuffers();
    }
