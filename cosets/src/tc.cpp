@@ -7,12 +7,12 @@
 
 struct Table {
    int N;
-   std::vector<std::vector<int>> fwd;
-   std::vector<std::vector<int>> rev;
+   std::vector<std::vector<int>> fwd{};
+   std::vector<std::vector<int>> rev{};
 
    explicit Table(int N) {
-      add_row();
       this->N = N;
+      add_row();
    }
 
    void add_row() {
