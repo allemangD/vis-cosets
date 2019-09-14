@@ -1,8 +1,42 @@
+#pragma once
+
 #include <iostream>
 #include <vector>
 #include <iomanip>
 #include <algorithm>
 #include <cmath>
+
+struct Mult {
+   int a, b, mult;
+};
+
+template<int N>
+struct Multiplicites {
+   std::vector<int> mults;
+
+   explicit Multiplicites(const std::vector<Mult> &vals) {
+      mults = std::vector<int>(N * (N - 1) / 2, 2);
+      for (const auto &mult : vals) {
+         set(mult.a, mult.b, mult.mult);
+      }
+   }
+
+   void set(int a, int b, int mult) {
+      if (a > N or b > N) throw std::logic_error("mirror does not exist");
+      if (a == b) throw std::logic_error("cannot compare mirror to itself");
+      if (a < b) std::swap(a, b); // a is bigger
+
+      mults[a + b] = mult;
+   }
+
+   [[nodiscard]] int get(int a, int b) const {
+      if (a > N or b > N) throw std::logic_error("mirror does not exist");
+      if (a == b) throw std::logic_error("cannot compare mirror to itself");
+      if (a < b) std::swap(a, b); // a is bigger
+
+      return mults[a + b];
+   }
+};
 
 
 struct Table {
@@ -194,30 +228,4 @@ std::ostream &operator<<(std::ostream &out, const Table &table) {
    out << "]\n";
 
    return out;
-}
-
-int main(int argc, char *argv[]) {
-   std::vector<std::vector<int>> ids{
-      {0, 0},
-      {1, 1},
-      {2, 2},
-      {0, 1, 0, 1, 0, 1, 0, 1},
-      {1, 2, 1, 2, 1, 2},
-      {0, 2, 0, 2}
-   };
-
-   Table *table = solve(3, {0, 1}, ids);
-
-   std::cout << table->size() << std::endl;
-   std::cout << *table << std::endl;
-
-   for (const auto &v : table->words()) {
-      std::cout << "[ ";
-      for (auto e : v) {
-         std::cout << e << " ";
-      }
-      std::cout << "]\n";
-   }
-
-   return 0;
 }

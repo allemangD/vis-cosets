@@ -7,13 +7,16 @@ target_link_libraries(${PROJECT_NAME}
         PRIVATE glad glm glfw)
 
 add_custom_command(
-        TARGET cosets POST_BUILD
+        TARGET ${PROJECT_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${CMAKE_CURRENT_SOURCE_DIR}/src/shaders
         ${CMAKE_CURRENT_BINARY_DIR}/shaders
 )
 
-add_executable(coxeter src/tc.cpp)
+add_executable(coxeter src/coxeter.cpp)
 
-add_executable(mirror src/mirror.cpp)
+add_executable(mirror src/mirrors.cpp)
 target_link_libraries(mirror PRIVATE glm)
+
+add_executable(mesh src/mesh.cpp)
+target_link_libraries(mesh PRIVATE glm)
