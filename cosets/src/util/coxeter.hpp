@@ -12,7 +12,7 @@ template<int N>
 struct Multiplicites {
    std::vector<int> mults;
 
-   explicit Multiplicites(std::vector<Mult> vals) {
+   explicit Multiplicites(const std::vector<Mult> &vals) {
       mults = std::vector<int>(N * (N - 1) / 2, 2);
       for (const auto &mult : vals) {
          set(mult.a, mult.b, mult.mult);
@@ -27,7 +27,7 @@ struct Multiplicites {
       mults[a + b] = mult;
    }
 
-   int get(int a, int b) const {
+   [[nodiscard]] int get(int a, int b) const {
       if (a > N or b > N) throw std::logic_error("mirror does not exist");
       if (a == b) throw std::logic_error("cannot compare mirror to itself");
       if (a < b) std::swap(a, b); // a is bigger
