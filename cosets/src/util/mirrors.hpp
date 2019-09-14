@@ -5,7 +5,7 @@
 #include <glm/gtx/string_cast.hpp>
 #include <iomanip>
 
-#include "util/numeric.hpp"
+#include "numeric.hpp"
 
 template<int N>
 std::vector<glm::vec4> mirror(const float (&arr)[N][N]) {
@@ -31,18 +31,4 @@ std::vector<glm::vec4> mirror(const float (&arr)[N][N]) {
    }
 
    return mirrors;
-}
-
-int main(int argc, char *argv[]) {
-   auto normals = mirror<3>({
-      {},
-      {4},
-      {2, 3}
-   });
-
-   for (const auto &normal : normals) {
-      std::cout << glm::to_string(normal) << std::endl;
-   }
-
-   return 0;
 }
