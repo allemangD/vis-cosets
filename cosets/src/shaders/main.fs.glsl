@@ -1,6 +1,10 @@
-#version 400
+#version 440 core
+
+uniform vec4 color;
 
 in vec4 v;
+
+out vec4 fcolor;
 
 vec3 hsv2rgb(vec3 c) {
     vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
@@ -9,5 +13,5 @@ vec3 hsv2rgb(vec3 c) {
 }
 
 void main(){
-  gl_FragColor = vec4(hsv2rgb(vec3(v.w, 1, 1)), 0);
+    fcolor = color;
 }

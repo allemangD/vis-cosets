@@ -46,7 +46,7 @@ vertices(const std::vector<int> &subgens, const Multiplicites<N> &mults, const f
    const std::vector<float> coords_vec(coords, coords + N);
    const glm::vec4 &identity = glm::normalize(barycentric(corners, coords_vec));
 
-   std::vector<glm::vec4> verts(table->size());
+   std::vector<glm::vec4> verts{};
 
    for (const auto &word : table->words()) {
       glm::vec4 vert = identity;
@@ -54,6 +54,10 @@ vertices(const std::vector<int> &subgens, const Multiplicites<N> &mults, const f
          vert = reflect(vert, normals[gen]);
       }
       verts.push_back(vert);
+   }
+
+   for (const auto &e : corners) {
+      verts.push_back(e * 1.1f);
    }
 
    return verts;

@@ -1,4 +1,4 @@
-#version 400
+#version 440 core
 
 uniform mat4 proj;
 

@@ -43,7 +43,7 @@ glm::vec4 barycentric(std::vector<glm::vec4> basis, std::vector<float> coords) {
    for (int i = 0; i < N; ++i) {
       res += basis[i] * coords[i];
    }
-   return res;
+   return glm::normalize(res);
 }
 
 std::vector<glm::vec4> plane_intersections(std::vector<glm::vec4> normals) {
@@ -51,8 +51,8 @@ std::vector<glm::vec4> plane_intersections(std::vector<glm::vec4> normals) {
    std::vector<glm::vec4> results(N);
 
    for (int i = 0; i < N; ++i) {
-      results[i] = glm::normalize(gram_schmidt_last(normals));
       std::rotate(normals.begin(), normals.begin() + 1, normals.end());
+      results[i] = gram_schmidt_last(normals);
    }
 
    return results;
