@@ -11,7 +11,7 @@
 #include "coxeter.hpp"
 
 template<int N>
-std::vector<glm::vec4> mirror(const Multiplicites<N> &mults) {
+std::vector<glm::vec4> mirror(const Mults<N> &mults) {
    static_assert(1 <= N and N <= 4, "Vector size is unsupported");
 
    std::vector<glm::vec4> mirrors{};

@@ -32,12 +32,9 @@ public:
 
       program = build_program("main", vs, fs);
 
-      verts_data = vertices<3>({}, Multiplicites<3>({
-         {0, 1, 5},
-         {1, 2, 3}
-      }), {
-         10, 1, 1
-      });
+      verts_data = vertices<3>(
+         schlafli<3>({5, 3}),
+         {10, 1, 1});
 
       glGenBuffers(1, &verts);
       glBindBuffer(GL_ARRAY_BUFFER, verts);
@@ -81,9 +78,7 @@ public:
 
       glBindVertexArray(tri);
       glUniform4f(0, 1, 1, 1, 1);
-      glDrawArrays(GL_POINTS, 0, verts_data.size() - 3);
-      glUniform4f(0, 1, 1, 1, .1);
-      glDrawArrays(GL_TRIANGLES, verts_data.size() - 3, 3);
+      glDrawArrays(GL_POINTS, 0, verts_data.size());
 
       swapbuffers();
    }

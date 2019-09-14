@@ -5,39 +5,60 @@
 #include <iomanip>
 #include <algorithm>
 #include <cmath>
-
-struct Mult {
-   int a, b, mult;
-};
+#include <map>
+#include <tuple>
 
 template<int N>
-struct Multiplicites {
-   std::vector<int> mults;
-
-   explicit Multiplicites(const std::vector<Mult> &vals) {
-      mults = std::vector<int>(N * (N - 1) / 2, 2);
-      for (const auto &mult : vals) {
-         set(mult.a, mult.b, mult.mult);
-      }
-   }
+struct Mults {
+   std::map<std::tuple<int, int>, int> mults{};
 
    void set(int a, int b, int mult) {
-      if (a > N or b > N) throw std::logic_error("mirror does not exist");
-      if (a == b) throw std::logic_error("cannot compare mirror to itself");
-      if (a < b) std::swap(a, b); // a is bigger
-
-      mults[a + b] = mult;
+      if (a > b) std::swap(a, b);
+      mults[std::make_tuple(a, b)] = mult;
    }
 
    [[nodiscard]] int get(int a, int b) const {
-      if (a > N or b > N) throw std::logic_error("mirror does not exist");
-      if (a == b) throw std::logic_error("cannot compare mirror to itself");
-      if (a < b) std::swap(a, b); // a is bigger
+      if (a == b) return 1;
+      if (a > b) std::swap(a, b);
 
-      return mults[a + b];
+      const auto &tup = std::make_tuple(a, b);
+      const auto &res = mults.find(tup);
+
+      if (res == mults.end()) return 2;
+      return res->second;
+   }
+
+   [[nodiscard]] std::vector<int> relation(int a, int b) const {
+      std::vector<int> res{};
+      int mult = get(a, b);
+
+      for (int i = 0; i < mult; ++i) {
+         res.push_back(a);
+         res.push_back(b);
+      }
+
+      return res;
+   }
+
+   [[nodiscard]] std::vector<std::vector<int>> relations() const {
+      std::vector<std::vector<int>> res{};
+      for (int a = 0; a < N; ++a) {
+         for (int b = a; b < N; ++b) {
+            res.push_back(relation(a, b));
+         }
+      }
+      return res;
    }
 };
 
+template<int N>
+Mults<N> schlafli(const int (&symbol)[N - 1]) {
+   Mults<N> mults{};
+   for (int i = 0; i < N; ++i) {
+      mults.set(i, i + 1, symbol[i]);
+   }
+   return mults;
+}
 
 struct Table {
    int N;
@@ -171,7 +192,10 @@ std::ostream &operator<<(std::ostream &out, const Row &row) {
    return out;
 }
 
-Table *solve(int gens, const std::vector<int> &subgens, const std::vector<std::vector<int>> &rels) {
+template<int N>
+Table *solve(const std::vector<int> &subgens, const Mults<N> &mults) {
+   const auto rels = mults.relations();
+   int gens = N;
    auto *table = new Table(gens);
 
    for (int gen : subgens)
