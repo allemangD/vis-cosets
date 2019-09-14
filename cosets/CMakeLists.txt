@@ -13,6 +13,6 @@ add_custom_command(
         ${CMAKE_CURRENT_BINARY_DIR}/shaders
 )
 
-add_executable(coxeter scr/coxeter.cpp)
+add_executable(coxeter src/coxeter.cpp)
 add_executable(mirror src/mirrors.cpp)
 target_link_libraries(mirror PRIVATE glm)
