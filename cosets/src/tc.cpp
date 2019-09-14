@@ -98,7 +98,7 @@ struct Row {
       this->to = cos;
    }
 
-   bool learn(Table *table) {
+   [[nodiscard]] bool learn(Table *table) {
       if (r - l == 0) {
          return false;
       }

@@ -5,22 +5,7 @@
 #include <glm/gtx/string_cast.hpp>
 #include <iomanip>
 
-glm::vec4 round(glm::vec4 f, int prec) {
-   auto dec = (float) pow(10, prec);
-   auto res = glm::trunc(f * dec + 0.5f) / dec;
-   return res;
-}
-
-template<int N>
-using vecn = glm::vec<N, float, glm::defaultp>;
-
-float dot(int n, glm::vec4 a, glm::vec4 b) {
-   float sum = 0;
-   for (int i = 0; i < n; ++i) {
-      sum += a[i] * b[i];
-   }
-   return sum;
-}
+#include "util/numeric.hpp"
 
 template<int N>
 std::vector<glm::vec4> mirror(const float (&arr)[N][N]) {
