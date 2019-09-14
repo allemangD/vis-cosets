@@ -77,6 +77,7 @@ struct Table {
       std::vector<std::vector<int>> res(size());
       for (int i = 0; i < (int) size(); ++i) {
          res[i] = *vecs[i];
+         delete vecs[i];
       }
 
       return res;
