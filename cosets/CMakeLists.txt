@@ -17,3 +17,6 @@ add_custom_command(
 )
 
 add_executable(coxeter src/tc.cpp)
+
+add_executable(mirror src/mirror.cpp)
+target_link_libraries(mirror PRIVATE glm)
