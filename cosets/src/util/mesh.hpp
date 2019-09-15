@@ -23,8 +23,8 @@ glm::vec4 identity(const std::vector<glm::vec4> &normals, const float(&coords)[N
 
 template<int N>
 std::vector<glm::vec4>
-vertices(const Mults<N> &mults, const float (&coords)[N]) {
-   Table *table = solve({}, mults);
+vertices(const Mults &mults, const float (&coords)[N]) {
+   Table *table = solve<N>({}, mults);
 
    const std::vector<glm::vec4> normals = mirror<N>(mults);
    glm::vec4 ident = identity(normals, coords);
@@ -42,9 +42,25 @@ vertices(const Mults<N> &mults, const float (&coords)[N]) {
 }
 
 template<int N>
-std::vector<unsigned> lines(const Mults<N> &mults) {
-//   Table *table = solve(N, {}, coxeter_rels(mults));
+std::vector<int> edges(const Mults &mults) {
+   std::vector<int> res{};
 
-   return {};
+   Table *verts = solve<N>({}, mults);
+
+   int K = 1;
+   for (const auto &subgens : combinations(N, K)) {
+      Table *edge = solve(subgens, {}, mults);
+
+      std::vector<int> primitive = verts->apply_each(edge->words());
+
+      Table *cosets = solve<N>(subgens, mults);
+
+      for (const auto &coset : cosets->words()) {
+         for (const auto &e : primitive) {
+            res.push_back(verts->apply(e, coset));
+         }
+      }
+   }
+
+   return res;
 }
-

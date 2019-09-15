@@ -57,3 +57,23 @@ std::vector<glm::vec4> plane_intersections(std::vector<glm::vec4> normals) {
 
    return results;
 }
+
+
+std::vector<std::vector<int>> combinations(int N, int K) {
+   std::string bitmask(K, 1); // K leading 1's
+   bitmask.resize(N, 0); // N-K trailing 0's
+   std::vector<std::vector<int>> combos{};
+
+   do {
+      std::vector<int> combo{};
+      for (int i = 0; i < N; ++i) // [0..N-1] integers
+      {
+         if (bitmask[i]) {
+            combo.push_back(i);
+         }
+      }
+      combos.push_back(combo);
+   } while (std::prev_permutation(bitmask.begin(), bitmask.end()));
+
+   return combos;
+}

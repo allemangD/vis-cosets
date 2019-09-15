@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <utility>
 #include <vector>
 #include <iomanip>
 #include <algorithm>
@@ -8,7 +9,6 @@
 #include <map>
 #include <tuple>
 
-template<int N>
 struct Mults {
    std::map<std::tuple<int, int>, int> mults{};
 
@@ -40,11 +40,11 @@ struct Mults {
       return res;
    }
 
-   [[nodiscard]] std::vector<std::vector<int>> relations() const {
+   [[nodiscard]] std::vector<std::vector<int>> relations(std::vector<int> gens) const {
       std::vector<std::vector<int>> res{};
-      for (int a = 0; a < N; ++a) {
-         for (int b = a; b < N; ++b) {
-            res.push_back(relation(a, b));
+      for (int a = 0; a < gens.size(); ++a) {
+         for (int b = a; b < gens.size(); ++b) {
+            res.push_back(relation(gens[a], gens[b]));
          }
       }
       return res;
@@ -52,8 +52,8 @@ struct Mults {
 };
 
 template<int N>
-Mults<N> schlafli(const int (&symbol)[N - 1]) {
-   Mults<N> mults{};
+Mults schlafli(const int (&symbol)[N - 1]) {
+   Mults mults{};
    for (int i = 0; i < N; ++i) {
       mults.set(i, i + 1, symbol[i]);
    }
@@ -61,23 +61,31 @@ Mults<N> schlafli(const int (&symbol)[N - 1]) {
 }
 
 struct Table {
-   int N;
+   const std::vector<int> gens;
    std::vector<std::vector<int>> fwd{};
    std::vector<std::vector<int>> rev{};
 
-   explicit Table(int N) {
-      this->N = N;
+   explicit Table(const std::vector<int> gens) : gens(gens) {
       add_row();
    }
 
+   [[nodiscard]] int gen_index(int gen) const {
+      for (unsigned i = 0; i < gens.size(); ++i)
+         if (gens[i] == gen)
+            return i;
+
+      throw std::logic_error("Referencing nonexistant generator");
+   }
+
    void add_row() {
+      int N = gens.size();
       fwd.emplace_back(N, -1);
       rev.emplace_back(N, -1);
    }
 
    int add_coset() {
       for (int from = 0; from < (int) size(); ++from) {
-         for (int gen = 0; gen < N; ++gen) {
+         for (int gen : gens) {
             if (get(from, gen) < 0) {
                int to = (int) size();
                add_row();
@@ -94,16 +102,19 @@ struct Table {
    }
 
    void set(int from, int gen, int to) {
-      fwd[from][gen] = to;
-      rev[to][gen] = from;
+      int i = gen_index(gen);
+      fwd[from][i] = to;
+      rev[to][i] = from;
    }
 
    [[nodiscard]] int get(int from, int gen) const {
-      return fwd[from][gen];
+      int i = gen_index(gen);
+      return fwd[from][i];
    }
 
    [[nodiscard]] int rget(int gen, int to) const {
-      return rev[to][gen];
+      int i = gen_index(gen);
+      return rev[to][i];
    }
 
    std::vector<std::vector<int>> words() {
@@ -117,7 +128,7 @@ struct Table {
                continue;
             }
 
-            for (int gen = 0; gen < (int) N; ++gen) {
+            for (int gen : gens) {
                int to = get(from, gen);
                if (vecs[to] != nullptr) {
                   continue;
@@ -136,6 +147,31 @@ struct Table {
       }
 
       return res;
+   }
+
+   [[nodiscard]] int apply(int e, const std::vector<int> &word) const {
+      for (const auto &gen : word) {
+         e = get(e, gen);
+      }
+      return e;
+   }
+
+   [[nodiscard]] int apply(const std::vector<int> &word) const {
+      return apply(0, word);
+   }
+
+   [[nodiscard]] std::vector<int> apply_each(int e, const std::vector<std::vector<int>> &words) const {
+      std::vector<int> res{};
+
+      for (const auto &word:words) {
+         res.push_back(apply(e, word));
+      }
+
+      return res;
+   }
+
+   [[nodiscard]] std::vector<int> apply_each(const std::vector<std::vector<int>> &words) const {
+      return apply_each(0, words);
    }
 };
 
@@ -192,10 +228,8 @@ std::ostream &operator<<(std::ostream &out, const Row &row) {
    return out;
 }
 
-template<int N>
-Table *solve(const std::vector<int> &subgens, const Mults<N> &mults) {
-   const auto rels = mults.relations();
-   int gens = N;
+Table *solve(const std::vector<int> &gens, const std::vector<int> &subgens, const Mults &mults) {
+   const auto rels = mults.relations(gens);
    auto *table = new Table(gens);
 
    for (int gen : subgens)
@@ -231,6 +265,15 @@ Table *solve(const std::vector<int> &subgens, const Mults<N> &mults) {
    return table;
 }
 
+template<int N>
+Table *solve(const std::vector<int> &subgens, const Mults &mults) {
+   std::vector<int> gens{};
+   for (int i = 0; i < N; ++i) {
+      gens.push_back(i);
+   }
+   return solve(gens, subgens, mults);
+}
+
 std::ostream &operator<<(std::ostream &out, const Table &table) {
    int k = ceil(log10(table.size()));
 
@@ -238,10 +281,10 @@ std::ostream &operator<<(std::ostream &out, const Table &table) {
    for (unsigned j = 0; j < table.size(); ++j) {
       auto arr = table.fwd[j];
       out << " " << std::setw(k) << j << " [";
-      for (int i = 0; i < table.N; ++i) {
+      for (int i = 0; i < (int) table.gens.size(); ++i) {
          out << arr[i];
 
-         if (i < table.N - 1)
+         if (i < table.gens.size() - 1)
             out << " ";
       }
 
