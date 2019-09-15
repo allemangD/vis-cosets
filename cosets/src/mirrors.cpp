@@ -1,7 +1,7 @@
 #include "util/mirrors.hpp"
 
 int main(int argc, char *argv[]) {
-   auto normals = mirror<3>(Multiplicites<3>({
+   auto normals = mirror<3>(Multiplicities<3>({
       {0, 1, 4},
       {1, 2, 3}
    }));

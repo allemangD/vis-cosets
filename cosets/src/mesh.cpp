@@ -1,16 +1,14 @@
 #include "util/mesh.hpp"
 
 int main(int argc, char *argv[]) {
-   auto vs = vertices<3>({}, Multiplicites<3>({
-      {0, 1, 4},
-      {1, 2, 3}
-   }), {
-      1.0f, 1.0f, 1.0f
-   });
+   const int N = 3;
+   const Mults &mults = schlafli<N>({4, 3});
+   const std::vector<glm::vec4> &vs = vertices<N>(mults, {10, 1, 1});
 
-   for (const auto &v : vs) {
-      std::cout << glm::to_string(v) << std::endl;
-   }
+   std::cout << "# verts: " << vs.size() << std::endl;
+
+   const auto es = edges<N>(mults);
+
 
    return 0;
 }
