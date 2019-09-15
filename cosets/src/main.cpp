@@ -13,13 +13,16 @@ using namespace std;
 
 class CosetsWindow : public Window {
    GLint program;
-   GLuint points_vao, edges_vao;
+   GLuint vert_vao, edge_vao, face_vao;
 
    GLuint verts_buf;
-   std::vector<glm::vec4> verts_data;
+   std::vector<glm::vec4> vert_data;
 
    GLuint edges_buf;
    std::vector<int> edge_data;
+
+   GLuint faces_buf;
+   std::vector<int> face_data;
 
 public:
    void init() override {
@@ -35,32 +38,46 @@ public:
 
       program = build_program("main", vs, fs);
 
-      const Mults &mults = schlafli<4>({3, 4, 3});
-      verts_data = vertices<4>(mults, {10, 1, 1, 1});
-      edge_data = edges<4>(mults);
+      const int N = 3;
+      const Mults &mults = schlafli<N>({5, 3});
+      vert_data = vertices<N>(mults, {5, 1, 1});
+      edge_data = edges<N>(mults);
+      face_data = faces<N>(mults);
 
       glGenBuffers(1, &verts_buf);
       glBindBuffer(GL_ARRAY_BUFFER, verts_buf);
-      glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec4) * verts_data.size(), &verts_data[0], GL_STATIC_DRAW);
+      glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec4) * vert_data.size(), &vert_data[0], GL_STATIC_DRAW);
 
       glGenBuffers(1, &edges_buf);
       glBindBuffer(GL_ARRAY_BUFFER, edges_buf);
       glBufferData(GL_ARRAY_BUFFER, sizeof(int) * edge_data.size(), &edge_data[0], GL_STATIC_DRAW);
 
-      glGenVertexArrays(1, &points_vao);
-      glBindVertexArray(points_vao);
+      glGenBuffers(1, &faces_buf);
+      glBindBuffer(GL_ARRAY_BUFFER, faces_buf);
+      glBufferData(GL_ARRAY_BUFFER, sizeof(int) * face_data.size(), &face_data[0], GL_STATIC_DRAW);
+
+      glGenVertexArrays(1, &vert_vao);
+      glBindVertexArray(vert_vao);
       glBindBuffer(GL_ARRAY_BUFFER, verts_buf);
       glEnableVertexAttribArray(0);
       glVertexAttribPointer(0, 4, GL_FLOAT, false, 0, nullptr);
       glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-      glGenVertexArrays(1, &edges_vao);
-      glBindVertexArray(edges_vao);
+      glGenVertexArrays(1, &edge_vao);
+      glBindVertexArray(edge_vao);
       glBindBuffer(GL_ARRAY_BUFFER, verts_buf);
       glEnableVertexAttribArray(0);
       glVertexAttribPointer(0, 4, GL_FLOAT, false, 0, nullptr);
       glBindBuffer(GL_ARRAY_BUFFER, 0);
       glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, edges_buf);
+
+      glGenVertexArrays(1, &face_vao);
+      glBindVertexArray(face_vao);
+      glBindBuffer(GL_ARRAY_BUFFER, verts_buf);
+      glEnableVertexAttribArray(0);
+      glVertexAttribPointer(0, 4, GL_FLOAT, false, 0, nullptr);
+      glBindBuffer(GL_ARRAY_BUFFER, 0);
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, faces_buf);
 
       glBindVertexArray(0);
    }
@@ -90,22 +107,32 @@ public:
       glEnable(GL_POINT_SMOOTH);
       glEnable(GL_BLEND);
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-      glPointSize(10.f);
+      glPointSize(6.0f);
+      glLineWidth(3.0f);
+      glEnable(GL_CULL_FACE);
 
-      glBindVertexArray(points_vao);
+      glBindVertexArray(vert_vao);
       glUniform4f(0, 1, 1, 1, 1);
-      glDrawArrays(GL_POINTS, 0, verts_data.size());
+//      glDrawArrays(GL_POINTS, 0, vert_data.size());
 
-      glBindVertexArray(edges_vao);
-      glUniform4f(0, 1, 1, 0, 1);
+      glBindVertexArray(edge_vao);
+      glUniform4f(0, 1, 0, 0, 1);
       glDrawElements(GL_LINES, edge_data.size(), GL_UNSIGNED_INT, 0);
+
+      glBindVertexArray(face_vao);
+      glCullFace(GL_BACK);
+      glUniform4f(0, .3, .3, .3, 1);
+      glDrawElements(GL_TRIANGLES, face_data.size(), GL_UNSIGNED_INT, 0);
+      glCullFace(GL_FRONT);
+      glUniform4f(0, .8, .8, .8, 1);
+      glDrawElements(GL_TRIANGLES, face_data.size(), GL_UNSIGNED_INT, 0);
 
       swapbuffers();
    }
 
    void deinit() override {
       glDeleteProgram(program);
-      glDeleteVertexArrays(1, &points_vao);
+      glDeleteVertexArrays(1, &vert_vao);
    }
 };
 

@@ -77,3 +77,19 @@ std::vector<std::vector<int>> combinations(int N, int K) {
 
    return combos;
 }
+
+std::vector<std::vector<int>> combinations(std::vector<int> N, int K) {
+   std::vector<std::vector<int>> inds = combinations(N.size(), K);
+   std::vector<std::vector<int>> res{};
+
+   for (const auto &combo: inds) {
+      std::vector<int> vals{};
+      vals.reserve(combo.size());
+      for (const auto &i: combo) {
+         vals.push_back(N[i]);
+      }
+      res.push_back(vals);
+   }
+
+   return res;
+}
