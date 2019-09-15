@@ -70,11 +70,15 @@ std::vector<int> faces(const Mults &mults) {
 
    Table *t_vert = solve<N>({}, mults);
 
+   // todo: try the combinations individually and try to find the pattern.
+
    // for each *kind* of face
+//   std::vector<int> sg_face{0,1};
    for (const auto &sg_face : combinations(N, 2)) {
       Table *cs_face = solve<N>(sg_face, mults);
 
       // for each *kind* of edge
+//      std::vector<int> sg_edge{1};
       for (const auto &sg_edge : combinations(sg_face, 1)) {
          Table *cs_edge = solve(sg_face, sg_edge, mults);
 
@@ -95,17 +99,13 @@ std::vector<int> faces(const Mults &mults) {
                }
                res.push_back(t_vert->apply(0, c_face));
 
-               int s = 0;
-               s += c_edge.size();
-               s += c_face.size();
-               s += sg_edge[0];
-               s += sg_face[0] + sg_face[1];
+               int s = c_edge.size() + sg_edge[0];
+               int t = c_face.size() + sg_face[0] + sg_face[1];
 
-               if (s % 2 == 0) {
+               if (s % 2 == 0 xor t % 2 == 0) {
                   std::swap(res[res.size() - 1], res[res.size() - 2]);
                }
             }
-//            break;
          }
       }
    }

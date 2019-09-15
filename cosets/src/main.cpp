@@ -40,7 +40,7 @@ public:
 
       const int N = 3;
       const Mults &mults = schlafli<N>({5, 3});
-      vert_data = vertices<N>(mults, {5, 1, 1});
+      vert_data = vertices<N>(mults, {1, 1, 1});
       edge_data = edges<N>(mults);
       face_data = faces<N>(mults);
 
@@ -112,8 +112,8 @@ public:
       glEnable(GL_CULL_FACE);
 
       glBindVertexArray(vert_vao);
-      glUniform4f(0, 1, 1, 1, 1);
-//      glDrawArrays(GL_POINTS, 0, vert_data.size());
+      glUniform4f(0, 1, 0, 0, 1);
+      glDrawArrays(GL_POINTS, 0, vert_data.size());
 
       glBindVertexArray(edge_vao);
       glUniform4f(0, 1, 0, 0, 1);
