@@ -24,6 +24,8 @@ class CosetsWindow : public Window {
    GLuint faces_buf;
    std::vector<int> face_data;
 
+   GLint u_proj, u_view, u_color;
+
 public:
    void init() override {
       auto vs = build_shader_file(
@@ -38,8 +40,12 @@ public:
 
       program = build_program("main", vs, fs);
 
+      u_proj = glGetUniformLocation(program, "proj");
+      u_view = glGetUniformLocation(program, "view");
+      u_color = glGetUniformLocation(program, "color");
+
       const int N = 3;
-      const Mults &mults = schlafli<N>({5, 3});
+      const Mults &mults = schlafli<N>({4, 3});
       vert_data = vertices<N>(mults, {1, 1, 1});
       edge_data = edges<N>(mults);
       face_data = faces<N>(mults);
@@ -80,6 +86,12 @@ public:
       glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, faces_buf);
 
       glBindVertexArray(0);
+
+      std::cout << "verts: " << vert_data.size() << std::endl;
+      std::cout << "vendor: " << glGetString(GL_VENDOR) << std::endl
+      << "renderer: " << glGetString(GL_RENDERER) << std::endl
+      << "version: " << glGetString(GL_VERSION) << std::endl
+      << "shading version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
    }
 
    void render() override {
@@ -101,30 +113,33 @@ public:
       const glm::mat4 view = glm::rotate(id, angle, ax_1) * glm::rotate(id, angle, ax_2);
 
       glUseProgram(program);
-      glUniformMatrix4fv(1, 1, false, glm::value_ptr(proj));
-      glUniformMatrix4fv(2, 1, false, glm::value_ptr(view));
+      glUniformMatrix4fv(u_proj, 1, false, glm::value_ptr(proj));
+      glUniformMatrix4fv(u_view, 1, false, glm::value_ptr(view));
+
       glEnable(GL_DEPTH_TEST);
       glEnable(GL_POINT_SMOOTH);
       glEnable(GL_BLEND);
-      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-      glPointSize(6.0f);
-      glLineWidth(3.0f);
       glEnable(GL_CULL_FACE);
 
+      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+      glPointSize(6.0f);
+      glLineWidth(3.0f);
+
       glBindVertexArray(vert_vao);
-      glUniform4f(0, 1, 0, 0, 1);
+      glUniform4f(u_color, 1, 0, 0, 1);
       glDrawArrays(GL_POINTS, 0, vert_data.size());
 
       glBindVertexArray(edge_vao);
-      glUniform4f(0, 1, 0, 0, 1);
+      glUniform4f(u_color, 1, 0, 0, 1);
       glDrawElements(GL_LINES, edge_data.size(), GL_UNSIGNED_INT, 0);
 
       glBindVertexArray(face_vao);
       glCullFace(GL_BACK);
-      glUniform4f(0, .3, .3, .3, 1);
+      glUniform4f(u_color, .3, .3, .3, 1);
       glDrawElements(GL_TRIANGLES, face_data.size(), GL_UNSIGNED_INT, 0);
       glCullFace(GL_FRONT);
-      glUniform4f(0, .8, .8, .8, 1);
+      glUniform4f(u_color, .8, .8, .8, 1);
       glDrawElements(GL_TRIANGLES, face_data.size(), GL_UNSIGNED_INT, 0);
 
       swapbuffers();
