@@ -19,13 +19,31 @@ glm::vec4 identity(const std::vector<glm::vec4> &normals, const std::vector<floa
    return glm::normalize(identity);
 }
 
+glm::vec4 identity(const Mults &mults, const std::vector<float> &coords) {
+   const std::vector<glm::vec4> normals = mirror(mults);
+   return identity(normals, coords);
+}
+
+glm::vec4 center(const Mults &mults) {
+   const std::vector<glm::vec4> normals = mirror(mults);
+   const std::vector<glm::vec4> corners = plane_intersections(normals);
+   std::vector<float> coords{};
+   for (int i = 0; i < corners.size(); ++i) {
+      const auto u = (i + 2) % corners.size();
+      const auto v = (i + 1) % corners.size();
+      const auto &d = corners[u] - corners[v];
+      coords.push_back(glm::length(d));
+   }
+   const glm::vec4 identity = barycentric(corners, coords);
+   return glm::normalize(identity);
+}
+
 std::vector<glm::vec4>
-vertices(const Mults &mults, std::vector<float> coords) {
+vertices(const Mults &mults, const glm::vec4 ident) {
    int N = mults.num_gens;
    Table *table = solve(all_gens(N), {}, mults);
 
    const std::vector<glm::vec4> normals = mirror(mults);
-   glm::vec4 ident = identity(normals, coords);
 
    std::vector<glm::vec4> verts{};
    for (const auto &word : table->words()) {
@@ -43,14 +61,16 @@ std::vector<int> edges(const Mults &mults) {
    std::vector<int> res{};
 
    int N = mults.num_gens;
-   Table *t_vert = solve(all_gens(N), {}, mults);
+   const std::vector<int> &gens = all_gens(N);
+
+   Table *t_vert = solve(gens, {}, mults);
 
    for (const auto &subgens : combinations(N, 1)) {
       Table *t_edge = solve(subgens, {}, mults);
 
       std::vector<int> edge = t_vert->apply_each(t_edge->words());
 
-      Table *c_edge = solve(all_gens(N), subgens, mults);
+      Table *c_edge = solve(gens, subgens, mults);
 
       for (const auto &coset : c_edge->words()) {
          for (const auto &e : edge) {
@@ -65,12 +85,22 @@ std::vector<int> edges(const Mults &mults) {
 std::vector<int> faces(const Mults &mults) {
    std::vector<int> res{};
    int N = mults.num_gens;
+   const std::vector<int> &gens = all_gens(N);
 
-   Table *t_vert = solve(all_gens(N), {}, mults);
+   Table *t_vert = solve(gens, {}, mults);
 
    // for each *kind* of face
    for (const auto &sg_face : combinations(N, 2)) {
-      Table *cs_face = solve(all_gens(N), sg_face, mults);
+      if (sg_face[0] == 0 and sg_face[1] == 1) continue;
+//      if (sg_face[0] == 0 and sg_face[1] == 2) continue;
+      if (sg_face[0] == 0 and sg_face[1] == 3) continue;
+
+      if (sg_face[0] == 1 and sg_face[1] == 2) continue;
+//      if (sg_face[0] == 1 and sg_face[1] == 3) continue;
+
+      if (sg_face[0] == 2 and sg_face[1] == 3) continue;
+
+      Table *cs_face = solve(gens, sg_face, mults);
 
       // for each *kind* of edge
       for (const auto &sg_edge : combinations(sg_face, 1)) {

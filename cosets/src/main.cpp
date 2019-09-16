@@ -29,6 +29,13 @@ class CosetsWindow : public Window {
 
 public:
    void init() override {
+      std::cout
+         << "Graphics Information:" << std::endl
+         << "Vendor: " << glGetString(GL_VENDOR) << std::endl
+         << "Renderer: " << glGetString(GL_RENDERER) << std::endl
+         << "Version: " << glGetString(GL_VERSION) << std::endl
+         << "Shading version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
+
       auto vs = build_shader_file(
          GL_VERTEX_SHADER,
          "vertex",
@@ -45,30 +52,47 @@ public:
       u_view = glGetUniformLocation(program, "view");
       u_color = glGetUniformLocation(program, "color");
 
-      const Mults &mults = schlafli({4, 3});
-      std::cout << mults.num_gens << std::endl;
+      const Mults &mults = schlafli({16, 2, 16});
+//      const glm::vec4 ident = center(mults);
+      const glm::vec4 ident = identity(mults, {1, 1, 1, 1});
+      std::cout << "Dimension: " << mults.num_gens << std::endl;
 
       std::cout << "Generation times: " << std::endl;
 
       auto gen_start = std::chrono::high_resolution_clock::now();
 
-      vert_data = vertices(mults, {1, .1, .1, .1});
+      vert_data = vertices(mults, ident);
       auto gen_vert = std::chrono::high_resolution_clock::now();
       std::chrono::duration<double> vert_time = gen_vert - gen_start;
-      std::cout << "Vertices: " << vert_time.count() << std::endl;
+      std::cout
+         << "Vertices: "
+         << std::setw(5) << std::setprecision(3) << vert_time.count()
+         << " (" << vert_data.size() << ")"
+         << std::endl;
 
       edge_data = edges(mults);
       auto gen_edge = std::chrono::high_resolution_clock::now();
       std::chrono::duration<double> edge_time = gen_edge - gen_vert;
-      std::cout << "   Edges: " << edge_time.count() << std::endl;
+      std::cout
+         << "   Edges: "
+         << std::setw(5) << std::setprecision(3) << edge_time.count()
+         << " (" << edge_data.size() / 2 << ")"
+         << std::endl;
 
       face_data = faces(mults);
       auto gen_face = std::chrono::high_resolution_clock::now();
       std::chrono::duration<double> face_time = gen_face - gen_edge;
-      std::cout << "   Faces: " << face_time.count() << std::endl;
+      std::cout
+         << "   Faces: "
+         << std::setw(5) << std::setprecision(3) << face_time.count()
+         << " (" << face_data.size() / 3 << ")"
+         << std::endl;
 
       std::chrono::duration<double> full_time = gen_face - gen_start;
-      std::cout << "   Total: " << full_time.count() << std::endl;
+      std::cout
+         << "   Total: "
+         << std::setw(5) << std::setprecision(3) << full_time.count()
+         << std::endl;
 
       glGenBuffers(1, &verts_buf);
       glBindBuffer(GL_ARRAY_BUFFER, verts_buf);
@@ -106,11 +130,6 @@ public:
       glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, faces_buf);
 
       glBindVertexArray(0);
-
-      std::cout << "vendor: " << glGetString(GL_VENDOR) << std::endl
-         << "renderer: " << glGetString(GL_RENDERER) << std::endl
-         << "version: " << glGetString(GL_VERSION) << std::endl
-         << "shading version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
    }
 
    void render() override {
@@ -156,7 +175,7 @@ public:
       glBindVertexArray(face_vao);
       glCullFace(GL_FRONT);
       glUniform4f(u_color, 1, 1, 1, 1);
-//      glDrawElements(GL_TRIANGLES, face_data.size(), GL_UNSIGNED_INT, 0);
+      glDrawElements(GL_TRIANGLES, face_data.size(), GL_UNSIGNED_INT, 0);
 
       swapbuffers();
    }
