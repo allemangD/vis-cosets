@@ -34,7 +34,7 @@ public:
       glfwWindowHint(GLFW_ALPHA_BITS, 8);
 
 
-      _window = glfwCreateWindow(640, 480, "GLFW App", nullptr, nullptr);
+      _window = glfwCreateWindow(1920, 1080, "GLFW App", nullptr, nullptr);
       if (!_window) {
          fprintf(stderr, "Failed to create window;");
          glfwTerminate();

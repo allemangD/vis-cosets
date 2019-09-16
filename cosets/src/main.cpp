@@ -45,8 +45,8 @@ public:
       u_color = glGetUniformLocation(program, "color");
 
       const int N = 3;
-      const Mults &mults = schlafli<N>({4, 3});
-      vert_data = vertices<N>(mults, {1, 1, 1});
+      const Mults &mults = schlafli<N>({5, 3});
+      vert_data = vertices<N>(mults, {10, 1, 1});
       edge_data = edges<N>(mults);
       face_data = faces<N>(mults);
 
@@ -89,9 +89,9 @@ public:
 
       std::cout << "verts: " << vert_data.size() << std::endl;
       std::cout << "vendor: " << glGetString(GL_VENDOR) << std::endl
-      << "renderer: " << glGetString(GL_RENDERER) << std::endl
-      << "version: " << glGetString(GL_VERSION) << std::endl
-      << "shading version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
+         << "renderer: " << glGetString(GL_RENDERER) << std::endl
+         << "version: " << glGetString(GL_VERSION) << std::endl
+         << "shading version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
    }
 
    void render() override {
@@ -104,7 +104,7 @@ public:
       const auto ax_1 = glm::vec3(0, 0, 1);
       const auto ax_2 = glm::vec3(.5, 1, 0.2);
       const auto t = glfwGetTime();
-      const auto angle = (float) t / 2;
+      const auto angle = (float) t / 5;
 
       const float sc = 1.5f;
       const float ar = (float) w / (float) h;
@@ -123,8 +123,8 @@ public:
 
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-      glPointSize(6.0f);
-      glLineWidth(3.0f);
+      glPointSize(10.0f);
+      glLineWidth(5.0f);
 
       glBindVertexArray(vert_vao);
       glUniform4f(u_color, 1, 0, 0, 1);
@@ -136,10 +136,7 @@ public:
 
       glBindVertexArray(face_vao);
       glCullFace(GL_BACK);
-      glUniform4f(u_color, .3, .3, .3, 1);
-      glDrawElements(GL_TRIANGLES, face_data.size(), GL_UNSIGNED_INT, 0);
-      glCullFace(GL_FRONT);
-      glUniform4f(u_color, .8, .8, .8, 1);
+      glUniform4f(u_color, 1, 1, 1, 1);
       glDrawElements(GL_TRIANGLES, face_data.size(), GL_UNSIGNED_INT, 0);
 
       swapbuffers();
