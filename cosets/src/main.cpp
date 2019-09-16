@@ -46,12 +46,12 @@ public:
       u_color = glGetUniformLocation(program, "color");
 
       const int N = 4;
-      const Mults &mults = schlafli<N>({3, 4, 3});
+      const Mults &mults = schlafli({3, 4, 3});
       std::cout << "Generation times: " << std::endl;
 
       auto gen_start = std::chrono::high_resolution_clock::now();
 
-      vert_data = vertices<N>(mults, {5, .1, .1, .1});
+      vert_data = vertices<N>(mults, {5, .1, .1});
       auto gen_vert = std::chrono::high_resolution_clock::now();
       std::chrono::duration<double> vert_time = gen_vert - gen_start;
       std::cout << "Vertices: " << vert_time.count() << std::endl;

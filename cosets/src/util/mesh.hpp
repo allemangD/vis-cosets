@@ -24,7 +24,7 @@ glm::vec4 identity(const std::vector<glm::vec4> &normals, const float(&coords)[N
 template<int N>
 std::vector<glm::vec4>
 vertices(const Mults &mults, const float (&coords)[N]) {
-   Table *table = solve<N>({}, mults);
+   Table *table = solve(all_gens(N), {}, mults);
 
    const std::vector<glm::vec4> normals = mirror<N>(mults);
    glm::vec4 ident = identity(normals, coords);
@@ -45,14 +45,14 @@ template<int N>
 std::vector<int> edges(const Mults &mults) {
    std::vector<int> res{};
 
-   Table *t_vert = solve<N>({}, mults);
+   Table *t_vert = solve(all_gens(N), {}, mults);
 
    for (const auto &subgens : combinations(N, 1)) {
       Table *t_edge = solve(subgens, {}, mults);
 
       std::vector<int> edge = t_vert->apply_each(t_edge->words());
 
-      Table *c_edge = solve<N>(subgens, mults);
+      Table *c_edge = solve(all_gens(N), subgens, mults);
 
       for (const auto &coset : c_edge->words()) {
          for (const auto &e : edge) {
@@ -68,11 +68,11 @@ template<int N>
 std::vector<int> faces(const Mults &mults) {
    std::vector<int> res{};
 
-   Table *t_vert = solve<N>({}, mults);
+   Table *t_vert = solve(all_gens(N), {}, mults);
 
    // for each *kind* of face
    for (const auto &sg_face : combinations(N, 2)) {
-      Table *cs_face = solve<N>(sg_face, mults);
+      Table *cs_face = solve(all_gens(N), sg_face, mults);
 
       // for each *kind* of edge
       for (const auto &sg_edge : combinations(sg_face, 1)) {

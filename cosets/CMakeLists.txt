@@ -8,16 +8,14 @@ add_custom_command(
 )
 
 add_executable(${PROJECT_NAME}
-        src/main.cpp)
+        src/main.cpp
+        src/util/coxeter.cpp)
+
+target_include_directories(${PROJECT_NAME} PRIVATE include)
+
 add_dependencies(cosets shaders)
+
 target_link_libraries(${PROJECT_NAME}
         PRIVATE glad glm glfw)
+
 target_compile_options(${PROJECT_NAME} PRIVATE -O3)
-
-add_executable(coxeter src/coxeter.cpp)
-
-add_executable(mirror src/mirrors.cpp)
-target_link_libraries(mirror PRIVATE glm)
-
-add_executable(mesh src/mesh.cpp)
-target_link_libraries(mesh PRIVATE glm)
