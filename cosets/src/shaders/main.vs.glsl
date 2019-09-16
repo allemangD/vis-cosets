@@ -1,4 +1,4 @@
-#version 440 core
+#version 400 core
 
 uniform mat4 proj;
 uniform mat4 view;
@@ -13,7 +13,7 @@ void main(){
   vec4 vert = view * pos;
 
   /* stereographic projection */
-  vert = vec4(vert.xyw / (1 - vert.z), 1);
+  vert = vec4(vert.xyz / (1 - vert.w), 1);
 
   screen = gl_Position = proj * vert;
 }

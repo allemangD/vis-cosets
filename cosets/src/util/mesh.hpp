@@ -45,19 +45,67 @@ template<int N>
 std::vector<int> edges(const Mults &mults) {
    std::vector<int> res{};
 
-   Table *verts = solve<N>({}, mults);
+   Table *t_vert = solve<N>({}, mults);
 
-   int K = 1;
-   for (const auto &subgens : combinations(N, K)) {
-      Table *edge = solve(subgens, {}, mults);
+   for (const auto &subgens : combinations(N, 1)) {
+      Table *t_edge = solve(subgens, {}, mults);
 
-      std::vector<int> primitive = verts->apply_each(edge->words());
+      std::vector<int> edge = t_vert->apply_each(t_edge->words());
 
-      Table *cosets = solve<N>(subgens, mults);
+      Table *c_edge = solve<N>(subgens, mults);
 
-      for (const auto &coset : cosets->words()) {
-         for (const auto &e : primitive) {
-            res.push_back(verts->apply(e, coset));
+      for (const auto &coset : c_edge->words()) {
+         for (const auto &e : edge) {
+            res.push_back(t_vert->apply(e, coset));
+         }
+      }
+   }
+
+   return res;
+}
+
+template<int N>
+std::vector<int> faces(const Mults &mults) {
+   std::vector<int> res{};
+
+   Table *t_vert = solve<N>({}, mults);
+
+   // for each *kind* of face
+   for (const auto &sg_face : combinations(N, 2)) {
+      Table *cs_face = solve<N>(sg_face, mults);
+
+      // for each *kind* of edge
+      for (const auto &sg_edge : combinations(sg_face, 1)) {
+         Table *cs_edge = solve(sg_face, sg_edge, mults);
+
+         // find the vertices of that edge
+         Table *t_edge = solve(sg_edge, {}, mults);
+         std::vector<int> edge = t_vert->apply_each(t_edge->words());
+
+         // for each face
+         for (const auto &c_face : cs_face->words()) {
+            // for each edge
+            for (const auto &c_edge : cs_edge->words()) {
+               if (c_edge.empty()) { continue; }
+
+               for (auto e : edge) {
+                  e = t_vert->apply(e, c_edge);
+                  e = t_vert->apply(e, c_face);
+                  res.push_back(e);
+               }
+               res.push_back(t_vert->apply(0, c_face));
+
+               if (c_edge.size() & 1u)
+                  std::swap(res[res.size() - 1], res[res.size() - 2]);
+
+               unsigned ro_si1 = (sg_face[0] + sg_face[1]);
+               unsigned flag = sg_edge[0] == sg_face[0];
+               unsigned n_mirrors = c_face.size();
+
+               if ((n_mirrors + flag + ro_si1) & 1u) {
+                  std::swap(res[res.size() - 1], res[res.size() - 2]);
+               }
+            }
          }
       }
    }
