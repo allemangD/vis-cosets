@@ -46,26 +46,28 @@ public:
       u_color = glGetUniformLocation(program, "color");
 
       const int N = 4;
-      const Mults &mults = schlafli<N>({5, 3, 3});
+      const Mults &mults = schlafli<N>({3, 4, 3});
+      std::cout << "Generation times: " << std::endl;
+
       auto gen_start = std::chrono::high_resolution_clock::now();
-      vert_data = vertices<N>(mults, {10,});
+
+      vert_data = vertices<N>(mults, {5, .1, .1, .1});
       auto gen_vert = std::chrono::high_resolution_clock::now();
+      std::chrono::duration<double> vert_time = gen_vert - gen_start;
+      std::cout << "Vertices: " << vert_time.count() << std::endl;
+
       edge_data = edges<N>(mults);
       auto gen_edge = std::chrono::high_resolution_clock::now();
+      std::chrono::duration<double> edge_time = gen_edge - gen_vert;
+      std::cout << "   Edges: " << edge_time.count() << std::endl;
+
       face_data = faces<N>(mults);
       auto gen_face = std::chrono::high_resolution_clock::now();
-
-      std::chrono::duration<double> vert_time = gen_vert - gen_start;
-      std::chrono::duration<double> edge_time = gen_edge - gen_vert;
       std::chrono::duration<double> face_time = gen_face - gen_edge;
+      std::cout << "   Faces: " << face_time.count() << std::endl;
+
       std::chrono::duration<double> full_time = gen_face - gen_start;
-
-      std::cout << "Generation times: " << std::endl
-         << "Vertices: " << vert_time.count() << std::endl
-         << "   Edges: " << edge_time.count() << std::endl
-         << "   Faces: " << face_time.count() << std::endl
-         << "   Total: " << full_time.count() << std::endl;
-
+      std::cout << "   Total: " << full_time.count() << std::endl;
 
       glGenBuffers(1, &verts_buf);
       glBindBuffer(GL_ARRAY_BUFFER, verts_buf);
@@ -151,7 +153,7 @@ public:
       glDrawElements(GL_LINES, edge_data.size(), GL_UNSIGNED_INT, 0);
 
       glBindVertexArray(face_vao);
-      glCullFace(GL_BACK);
+      glCullFace(GL_FRONT);
       glUniform4f(u_color, 1, 1, 1, 1);
 //      glDrawElements(GL_TRIANGLES, face_data.size(), GL_UNSIGNED_INT, 0);
 
