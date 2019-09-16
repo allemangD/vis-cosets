@@ -52,9 +52,9 @@ public:
       u_view = glGetUniformLocation(program, "view");
       u_color = glGetUniformLocation(program, "color");
 
-      const Mults &mults = schlafli({16, 2, 16});
+      const Mults &mults = schlafli({3, 3, 5});
 //      const glm::vec4 ident = center(mults);
-      const glm::vec4 ident = identity(mults, {1, 1, 1, 1});
+      const glm::vec4 ident = identity(mults, {10, 1, 1, 1});
       std::cout << "Dimension: " << mults.num_gens << std::endl;
 
       std::cout << "Generation times: " << std::endl;
@@ -166,7 +166,7 @@ public:
 
       glBindVertexArray(vert_vao);
       glUniform4f(u_color, 1, 0, 0, 1);
-      glDrawArrays(GL_POINTS, 0, vert_data.size());
+//      glDrawArrays(GL_POINTS, 0, vert_data.size());
 
       glBindVertexArray(edge_vao);
       glUniform4f(u_color, 1, 0, 0, 1);

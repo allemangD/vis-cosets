@@ -66,6 +66,7 @@ std::vector<int> edges(const Mults &mults) {
    Table *t_vert = solve(gens, {}, mults);
 
    for (const auto &subgens : combinations(N, 1)) {
+      if (subgens[0] == 0) continue;
       Table *t_edge = solve(subgens, {}, mults);
 
       std::vector<int> edge = t_vert->apply_each(t_edge->words());
@@ -91,14 +92,13 @@ std::vector<int> faces(const Mults &mults) {
 
    // for each *kind* of face
    for (const auto &sg_face : combinations(N, 2)) {
-      if (sg_face[0] == 0 and sg_face[1] == 1) continue;
-//      if (sg_face[0] == 0 and sg_face[1] == 2) continue;
-      if (sg_face[0] == 0 and sg_face[1] == 3) continue;
+      if (sg_face[0] == 0 and sg_face[1] == 3) continue; // checker
+      if (sg_face[0] == 0 and sg_face[1] == 2) continue; // checker
+//      if (sg_face[0] == 1 and sg_face[1] == 2) continue; // checker
+//      if (sg_face[0] == 1 and sg_face[1] == 3) continue; // checker
 
-      if (sg_face[0] == 1 and sg_face[1] == 2) continue;
-//      if (sg_face[0] == 1 and sg_face[1] == 3) continue;
-
-      if (sg_face[0] == 2 and sg_face[1] == 3) continue;
+      if (sg_face[0] == 0 and sg_face[1] == 1) continue; // flat
+//      if (sg_face[0] == 2 and sg_face[1] == 3) continue; // vertical
 
       Table *cs_face = solve(gens, sg_face, mults);
 
