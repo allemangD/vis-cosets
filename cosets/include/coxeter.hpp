@@ -27,11 +27,12 @@ struct Mults {
 
 struct Table {
    const std::vector<int> gens;
+   const Mults mults;
    std::vector<int> gen_inds;
    std::vector<std::vector<int>> fwd;
    std::vector<std::vector<int>> rev;
 
-   explicit Table(std::vector<int> gens);
+   explicit Table(std::vector<int> gens, Mults mults);
 
    [[nodiscard]] int gen_index(int gen) const;
 
@@ -79,6 +80,10 @@ struct IRow {
 };
 
 Table *solve(const std::vector<int> &gens, const std::vector<int> &subgens, const Mults &mults);
+
+Table *solve(const std::vector<int> &subgens, const Mults &mults);
+
+Table *solve_elems(const Mults &mults);
 
 Mults schlafli(const std::vector<int> &symbol);
 

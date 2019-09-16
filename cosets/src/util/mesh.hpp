@@ -39,14 +39,11 @@ glm::vec4 center(const Mults &mults) {
 }
 
 std::vector<glm::vec4>
-vertices(const Mults &mults, const glm::vec4 ident) {
-   int N = mults.num_gens;
-   Table *table = solve(all_gens(N), {}, mults);
-
-   const std::vector<glm::vec4> normals = mirror(mults);
+vertices(const Table *t_vert, const glm::vec4 ident) {
+   const std::vector<glm::vec4> normals = mirror(t_vert->mults);
 
    std::vector<glm::vec4> verts{};
-   for (const auto &word : table->words()) {
+   for (const auto &word : t_vert->words()) {
       glm::vec4 vert = ident;
       for (const auto &gen : word) {
          vert = reflect(vert, normals[gen]);
@@ -57,16 +54,14 @@ vertices(const Mults &mults, const glm::vec4 ident) {
    return verts;
 }
 
-std::vector<int> edges(const Mults &mults) {
+std::vector<int> edges(const Table *t_vert) {
    std::vector<int> res{};
 
+   Mults mults = t_vert->mults;
    int N = mults.num_gens;
-   const std::vector<int> &gens = all_gens(N);
-
-   Table *t_vert = solve(gens, {}, mults);
+   const std::vector<int> &gens = t_vert->gens;
 
    for (const auto &subgens : combinations(N, 1)) {
-      if (subgens[0] == 0) continue;
       Table *t_edge = solve(subgens, {}, mults);
 
       std::vector<int> edge = t_vert->apply_each(t_edge->words());
@@ -83,23 +78,14 @@ std::vector<int> edges(const Mults &mults) {
    return res;
 }
 
-std::vector<int> faces(const Mults &mults) {
+std::vector<int> faces(const Table *t_vert) {
    std::vector<int> res{};
+   const Mults &mults = t_vert->mults;
    int N = mults.num_gens;
-   const std::vector<int> &gens = all_gens(N);
-
-   Table *t_vert = solve(gens, {}, mults);
+   const std::vector<int> &gens = t_vert->gens;
 
    // for each *kind* of face
    for (const auto &sg_face : combinations(N, 2)) {
-      if (sg_face[0] == 0 and sg_face[1] == 3) continue; // checker
-      if (sg_face[0] == 0 and sg_face[1] == 2) continue; // checker
-//      if (sg_face[0] == 1 and sg_face[1] == 2) continue; // checker
-//      if (sg_face[0] == 1 and sg_face[1] == 3) continue; // checker
-
-      if (sg_face[0] == 0 and sg_face[1] == 1) continue; // flat
-//      if (sg_face[0] == 2 and sg_face[1] == 3) continue; // vertical
-
       Table *cs_face = solve(gens, sg_face, mults);
 
       // for each *kind* of edge

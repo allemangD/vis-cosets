@@ -53,7 +53,7 @@ std::vector<std::vector<int>> Mults::irelations(Table *table, std::vector<int> g
    return irels;
 }
 
-Table::Table(const std::vector<int> gens) : gens(gens) {
+Table::Table(const std::vector<int> gens, const Mults mults) : gens(gens), mults(mults) {
    add_row();
 
    gen_inds = std::vector<int>(gens[gens.size() - 1] + 1, -1);
@@ -224,7 +224,7 @@ bool IRow::learn(Table *table) {
 }
 
 Table *solve(const std::vector<int> &gens, const std::vector<int> &subgens, const Mults &mults) {
-   auto *table = new Table(gens);
+   auto *table = new Table(gens, mults);
    const auto irels = mults.irelations(table, gens);
 
    for (int gen : subgens)
@@ -258,6 +258,14 @@ Table *solve(const std::vector<int> &gens, const std::vector<int> &subgens, cons
    }
 
    return table;
+}
+
+Table *solve(const std::vector<int> &subgens, const Mults &mults) {
+   return solve(all_gens(mults.num_gens), subgens, mults);
+}
+
+Table *solve_elems(const Mults &mults) {
+   return solve({}, mults);
 }
 
 Mults schlafli(const std::vector<int> &symbol) {

@@ -52,25 +52,34 @@ public:
       u_view = glGetUniformLocation(program, "view");
       u_color = glGetUniformLocation(program, "color");
 
-      const Mults &mults = schlafli({3, 3, 5});
+      const Mults &mults = schlafli({5,3,3});
 //      const glm::vec4 ident = center(mults);
-      const glm::vec4 ident = identity(mults, {10, 1, 1, 1});
+      const glm::vec4 ident = identity(mults, {1,});
       std::cout << "Dimension: " << mults.num_gens << std::endl;
 
       std::cout << "Generation times: " << std::endl;
 
       auto gen_start = std::chrono::high_resolution_clock::now();
 
-      vert_data = vertices(mults, ident);
+      const Table *t_vert = solve_elems(mults);
+      auto gen_solve = std::chrono::high_resolution_clock::now();
+      std::chrono::duration<double> solve_time = gen_solve - gen_start;
+      std::cout
+         << "Table: "
+         << std::setw(5) << std::setprecision(3) << solve_time.count()
+         << std::endl;
+
+
+      vert_data = vertices(t_vert, ident);
       auto gen_vert = std::chrono::high_resolution_clock::now();
-      std::chrono::duration<double> vert_time = gen_vert - gen_start;
+      std::chrono::duration<double> vert_time = gen_vert - gen_solve;
       std::cout
          << "Vertices: "
          << std::setw(5) << std::setprecision(3) << vert_time.count()
          << " (" << vert_data.size() << ")"
          << std::endl;
 
-      edge_data = edges(mults);
+      edge_data = edges(t_vert);
       auto gen_edge = std::chrono::high_resolution_clock::now();
       std::chrono::duration<double> edge_time = gen_edge - gen_vert;
       std::cout
@@ -79,7 +88,7 @@ public:
          << " (" << edge_data.size() / 2 << ")"
          << std::endl;
 
-      face_data = faces(mults);
+      face_data = faces(t_vert);
       auto gen_face = std::chrono::high_resolution_clock::now();
       std::chrono::duration<double> face_time = gen_face - gen_edge;
       std::cout
@@ -147,8 +156,20 @@ public:
       const float sc = 1.5f;
       const float ar = (float) w / (float) h;
 
+      const float c1 = std::cos(angle * .7);
+      const float s1 = std::sin(angle * .7);
+      const float c2 = std::cos(angle * .5);
+      const float s2 = std::sin(angle * .5);
+
       const glm::mat4 proj = glm::ortho(-ar * sc, ar * sc, -sc, sc, -10.f, 10.f);
-      const glm::mat4 view = glm::rotate(id, angle, ax_1) * glm::rotate(id, angle, ax_2);
+      const glm::mat4 view = glm::rotate(id, angle, ax_1) * glm::rotate(id, angle, ax_2)
+         * glm::mat4(
+         c1, 0.0, s1, 0.0,
+         0.0, c2, 0.0, s2,
+         -s1, 0.0, c1, 0.0,
+         0.0, -s2, 0.0, c2
+      )
+      ;
 
       glUseProgram(program);
       glUniformMatrix4fv(u_proj, 1, false, glm::value_ptr(proj));
@@ -166,16 +187,20 @@ public:
 
       glBindVertexArray(vert_vao);
       glUniform4f(u_color, 1, 0, 0, 1);
-//      glDrawArrays(GL_POINTS, 0, vert_data.size());
+      glDrawArrays(GL_POINTS, 0, vert_data.size());
 
       glBindVertexArray(edge_vao);
       glUniform4f(u_color, 1, 0, 0, 1);
       glDrawElements(GL_LINES, edge_data.size(), GL_UNSIGNED_INT, 0);
 
       glBindVertexArray(face_vao);
-      glCullFace(GL_FRONT);
+      glCullFace(GL_NONE);
       glUniform4f(u_color, 1, 1, 1, 1);
-      glDrawElements(GL_TRIANGLES, face_data.size(), GL_UNSIGNED_INT, 0);
+//      glDrawElements(GL_TRIANGLES, face_data.size(), GL_UNSIGNED_INT, 0);
+
+//      glCullFace(GL_FRONT);
+//      glUniform4f(u_color, .3, .3, 1, 1);
+//      glDrawElements(GL_TRIANGLES, face_data.size(), GL_UNSIGNED_INT, 0);
 
       swapbuffers();
    }
