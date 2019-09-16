@@ -9,6 +9,8 @@
 #include <map>
 #include <tuple>
 
+struct Table;
+
 struct Mults {
    std::map<std::tuple<int, int>, int> mults{};
 
@@ -49,6 +51,8 @@ struct Mults {
       }
       return res;
    }
+
+   [[nodiscard]] std::vector<std::vector<int>> irelations(Table *table, std::vector<int> gens) const;
 };
 
 template<int N>
@@ -82,6 +86,14 @@ struct Table {
       if (i < 0)
          throw std::logic_error("Referencing nonexistant generator (not present)");
       return i;
+   }
+
+   [[nodiscard]] std::vector<int> gen_index_each(std::vector<int> rel) const {
+      std::vector<int> res(rel.size(), 0);
+      for (int i = 0; i < rel.size(); ++i) {
+         res[i] = gen_index(rel[i]);
+      }
+      return res;
    }
 
    void add_row() {
@@ -124,6 +136,21 @@ struct Table {
       return rev[to][i];
    }
 
+   void iset(int from, int igen, int to) {
+      fwd[from][igen] = to;
+      rev[to][igen] = from;
+   }
+
+   [[nodiscard]] int iget(int from, int igen) const {
+      return fwd[from][igen];
+   }
+
+   [[nodiscard]] int irget(int igen, int to) const {
+      return rev[to][igen];
+   }
+
+   // todo iwords for index-based words?
+
    std::vector<std::vector<int>> words() {
       std::vector<std::vector<int> *> vecs(size());
       vecs[0] = new std::vector<int>();
@@ -135,14 +162,14 @@ struct Table {
                continue;
             }
 
-            for (int gen : gens) {
-               int to = get(from, gen);
+            for (int igen = 0; igen < gens.size(); igen++) {
+               int to = iget(from, igen);
                if (vecs[to] != nullptr) {
                   continue;
                }
 
                vecs[to] = new std::vector<int>(*word);
-               vecs[to]->push_back(gen);
+               vecs[to]->push_back(gens[igen]);
             }
          }
       }
@@ -156,6 +183,8 @@ struct Table {
       return res;
    }
 
+   // todo iapply(e)
+
    [[nodiscard]] int apply(int e, const std::vector<int> &word) const {
       for (const auto &gen : word) {
          e = get(e, gen);
@@ -163,9 +192,13 @@ struct Table {
       return e;
    }
 
+   // todo iapply
+
    [[nodiscard]] int apply(const std::vector<int> &word) const {
       return apply(0, word);
    }
+
+   // todo iapply_each(e)
 
    [[nodiscard]] std::vector<int> apply_each(int e, const std::vector<std::vector<int>> &words) const {
       std::vector<int> res{};
@@ -177,19 +210,30 @@ struct Table {
       return res;
    }
 
+   // todo iapply_each
+
    [[nodiscard]] std::vector<int> apply_each(const std::vector<std::vector<int>> &words) const {
       return apply_each(0, words);
    }
 };
 
-struct Row {
+[[nodiscard]] std::vector<std::vector<int>> Mults::irelations(Table *table, std::vector<int> gens) const {
+   std::vector<std::vector<int>> rels = relations(gens);
+   std::vector<std::vector<int>> irels(rels.size());
+   for (int i = 0; i < rels.size(); ++i) {
+      irels[i] = table->gen_index_each(rels[i]);
+   }
+   return irels;
+}
+
+struct IRow {
    std::vector<int>::const_iterator l;
    std::vector<int>::const_iterator r;
 
    int from;
    int to;
 
-   Row(const std::vector<int> &vec, int cos) {
+   IRow(const std::vector<int> &vec, int cos) {
       this->l = vec.begin();
       this->r = vec.end() - 1;
       this->from = cos;
@@ -202,21 +246,21 @@ struct Row {
       }
 
       while (r - l > 0) {
-         int next = table->get(from, *l);
+         int next = table->iget(from, *l);
          if (next < 0) break;
          l++;
          from = next;
       }
 
       while (r - l > 0) {
-         int next = table->rget(*r, to);
+         int next = table->irget(*r, to);
          if (next < 0) break;
          r--;
          to = next;
       }
 
       if (r - l == 0) {
-         table->set(from, *l, to);
+         table->iset(from, *l, to);
          return true;
       }
 
@@ -224,36 +268,25 @@ struct Row {
    }
 };
 
-std::ostream &operator<<(std::ostream &out, const Row &row) {
-   out << "[ " << row.from << " | ";
-   auto it = row.l;
-   while (row.r - it > 0) {
-      out << *it << " ";
-      it++;
-   }
-   out << "| " << row.to << " ]";
-   return out;
-}
-
 Table *solve(const std::vector<int> &gens, const std::vector<int> &subgens, const Mults &mults) {
-   const auto rels = mults.relations(gens);
    auto *table = new Table(gens);
+   const auto irels = mults.irelations(table, gens);
 
    for (int gen : subgens)
       table->set(0, gen, 0);
 
-   std::vector<Row> rows;
-   rows.reserve(rels.size());
-   for (const auto &rel : rels)
-      rows.emplace_back(rel, 0);
+   std::vector<IRow> irows;
+   irows.reserve(irels.size());
+   for (const auto &irel : irels)
+      irows.emplace_back(irel, 0);
 
-   while (!rows.empty()) {
+   while (!irows.empty()) {
       while (true) {
          bool learned = false;
-         for (int i = (int) rows.size() - 1; i >= 0; i--) {
-            if (rows[i].learn(table)) {
+         for (int i = (int) irows.size() - 1; i >= 0; i--) {
+            if (irows[i].learn(table)) {
                learned = true;
-               rows.erase(rows.begin() + i);
+               irows.erase(irows.begin() + i);
             }
          }
          if (!learned)
@@ -262,8 +295,8 @@ Table *solve(const std::vector<int> &gens, const std::vector<int> &subgens, cons
 
       int i = (int) table->size();
       if (table->add_coset() > 0) {
-         for (const auto &rel : rels)
-            rows.emplace_back(rel, i);
+         for (const auto &irel : irels)
+            irows.emplace_back(irel, i);
       } else {
          break;
       }
@@ -279,6 +312,17 @@ Table *solve(const std::vector<int> &subgens, const Mults &mults) {
       gens.push_back(i);
    }
    return solve(gens, subgens, mults);
+}
+
+std::ostream &operator<<(std::ostream &out, const IRow &row) {
+   out << "[ " << row.from << " | ";
+   auto it = row.l;
+   while (row.r - it > 0) {
+      out << *it << " ";
+      it++;
+   }
+   out << "| " << row.to << " ]";
+   return out;
 }
 
 std::ostream &operator<<(std::ostream &out, const Table &table) {

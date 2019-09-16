@@ -6,6 +6,7 @@
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <vector>
+#include <chrono>
 
 #include "util/mesh.hpp"
 
@@ -46,9 +47,25 @@ public:
 
       const int N = 4;
       const Mults &mults = schlafli<N>({5, 3, 3});
-      vert_data = vertices<N>(mults, {10, });
+      auto gen_start = std::chrono::high_resolution_clock::now();
+      vert_data = vertices<N>(mults, {10,});
+      auto gen_vert = std::chrono::high_resolution_clock::now();
       edge_data = edges<N>(mults);
+      auto gen_edge = std::chrono::high_resolution_clock::now();
       face_data = faces<N>(mults);
+      auto gen_face = std::chrono::high_resolution_clock::now();
+
+      std::chrono::duration<double> vert_time = gen_vert - gen_start;
+      std::chrono::duration<double> edge_time = gen_edge - gen_vert;
+      std::chrono::duration<double> face_time = gen_face - gen_edge;
+      std::chrono::duration<double> full_time = gen_face - gen_start;
+
+      std::cout << "Generation times: " << std::endl
+         << "Vertices: " << vert_time.count() << std::endl
+         << "   Edges: " << edge_time.count() << std::endl
+         << "   Faces: " << face_time.count() << std::endl
+         << "   Total: " << full_time.count() << std::endl;
+
 
       glGenBuffers(1, &verts_buf);
       glBindBuffer(GL_ARRAY_BUFFER, verts_buf);
@@ -87,7 +104,6 @@ public:
 
       glBindVertexArray(0);
 
-      std::cout << "verts: " << vert_data.size() << std::endl;
       std::cout << "vendor: " << glGetString(GL_VENDOR) << std::endl
          << "renderer: " << glGetString(GL_RENDERER) << std::endl
          << "version: " << glGetString(GL_VERSION) << std::endl
@@ -137,7 +153,7 @@ public:
       glBindVertexArray(face_vao);
       glCullFace(GL_BACK);
       glUniform4f(u_color, 1, 1, 1, 1);
-      glDrawElements(GL_TRIANGLES, face_data.size(), GL_UNSIGNED_INT, 0);
+//      glDrawElements(GL_TRIANGLES, face_data.size(), GL_UNSIGNED_INT, 0);
 
       swapbuffers();
    }
