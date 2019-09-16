@@ -45,23 +45,24 @@ public:
       u_view = glGetUniformLocation(program, "view");
       u_color = glGetUniformLocation(program, "color");
 
-      const int N = 4;
-      const Mults &mults = schlafli({3, 4, 3});
+      const Mults &mults = schlafli({4, 3});
+      std::cout << mults.num_gens << std::endl;
+
       std::cout << "Generation times: " << std::endl;
 
       auto gen_start = std::chrono::high_resolution_clock::now();
 
-      vert_data = vertices<N>(mults, {5, .1, .1});
+      vert_data = vertices(mults, {1, .1, .1, .1});
       auto gen_vert = std::chrono::high_resolution_clock::now();
       std::chrono::duration<double> vert_time = gen_vert - gen_start;
       std::cout << "Vertices: " << vert_time.count() << std::endl;
 
-      edge_data = edges<N>(mults);
+      edge_data = edges(mults);
       auto gen_edge = std::chrono::high_resolution_clock::now();
       std::chrono::duration<double> edge_time = gen_edge - gen_vert;
       std::cout << "   Edges: " << edge_time.count() << std::endl;
 
-      face_data = faces<N>(mults);
+      face_data = faces(mults);
       auto gen_face = std::chrono::high_resolution_clock::now();
       std::chrono::duration<double> face_time = gen_face - gen_edge;
       std::cout << "   Faces: " << face_time.count() << std::endl;

@@ -17,5 +17,3 @@ add_dependencies(cosets shaders)
 
 target_link_libraries(${PROJECT_NAME}
         PRIVATE glad glm glfw)
-
-target_compile_options(${PROJECT_NAME} PRIVATE -O3)

@@ -10,9 +10,8 @@
 #include "numeric.hpp"
 #include "coxeter.hpp"
 
-template<int N>
 std::vector<glm::vec4> mirror(const Mults &mults) {
-   static_assert(1 <= N and N <= 4, "Vector size is unsupported");
+   int N = mults.num_gens;
 
    std::vector<glm::vec4> mirrors{};
    for (int p = 0; p < N; ++p) {

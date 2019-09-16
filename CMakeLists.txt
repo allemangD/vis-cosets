@@ -14,3 +14,8 @@ option(GLM_TEST_ENABLE OFF)
 add_subdirectory(vendor/glm)
 
 add_subdirectory(cosets)
+
+if (NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release)
+endif ()
+set(CMAKE_CXX_FLAGS_RELEASE "-O3")

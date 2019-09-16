@@ -9,7 +9,10 @@ struct Table;
 struct IRow;
 
 struct Mults {
+   int num_gens;
    std::map<std::tuple<int, int>, int> mults;
+
+   Mults();
 
    void set(int a, int b, int mult);
 

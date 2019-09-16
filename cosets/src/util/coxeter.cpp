@@ -1,7 +1,13 @@
 #include "coxeter.hpp"
 
+Mults::Mults() {
+   num_gens = 0;
+   mults = std::map<std::tuple<int, int>, int>();
+}
+
 void Mults::set(int a, int b, int mult) {
    if (a > b) std::swap(a, b);
+   if (b + 1 > num_gens) num_gens = b + 1;
    mults[std::make_tuple(a, b)] = mult;
 }
 

@@ -13,20 +13,18 @@ std::vector<std::vector<int>> coxeter_rels() {
    return rels;
 }
 
-template<int N>
-glm::vec4 identity(const std::vector<glm::vec4> &normals, const float(&coords)[N]) {
+glm::vec4 identity(const std::vector<glm::vec4> &normals, const std::vector<float> &coords) {
    const std::vector<glm::vec4> corners = plane_intersections(normals);
-   const std::vector<float> coords_vec(coords, coords + N);
-   const glm::vec4 identity = barycentric(corners, coords_vec);
+   const glm::vec4 identity = barycentric(corners, coords);
    return glm::normalize(identity);
 }
 
-template<int N>
 std::vector<glm::vec4>
-vertices(const Mults &mults, const float (&coords)[N]) {
+vertices(const Mults &mults, std::vector<float> coords) {
+   int N = mults.num_gens;
    Table *table = solve(all_gens(N), {}, mults);
 
-   const std::vector<glm::vec4> normals = mirror<N>(mults);
+   const std::vector<glm::vec4> normals = mirror(mults);
    glm::vec4 ident = identity(normals, coords);
 
    std::vector<glm::vec4> verts{};
@@ -41,10 +39,10 @@ vertices(const Mults &mults, const float (&coords)[N]) {
    return verts;
 }
 
-template<int N>
 std::vector<int> edges(const Mults &mults) {
    std::vector<int> res{};
 
+   int N = mults.num_gens;
    Table *t_vert = solve(all_gens(N), {}, mults);
 
    for (const auto &subgens : combinations(N, 1)) {
@@ -64,9 +62,9 @@ std::vector<int> edges(const Mults &mults) {
    return res;
 }
 
-template<int N>
 std::vector<int> faces(const Mults &mults) {
    std::vector<int> res{};
+   int N = mults.num_gens;
 
    Table *t_vert = solve(all_gens(N), {}, mults);
 
