@@ -44,9 +44,9 @@ public:
       u_view = glGetUniformLocation(program, "view");
       u_color = glGetUniformLocation(program, "color");
 
-      const int N = 3;
-      const Mults &mults = schlafli<N>({5, 3});
-      vert_data = vertices<N>(mults, {10, 1, 1});
+      const int N = 4;
+      const Mults &mults = schlafli<N>({5, 3, 3});
+      vert_data = vertices<N>(mults, {10, });
       edge_data = edges<N>(mults);
       face_data = faces<N>(mults);
 

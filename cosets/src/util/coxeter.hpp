@@ -62,19 +62,26 @@ Mults schlafli(const int (&symbol)[N - 1]) {
 
 struct Table {
    const std::vector<int> gens;
+   std::vector<int> gen_inds;
    std::vector<std::vector<int>> fwd{};
    std::vector<std::vector<int>> rev{};
 
    explicit Table(const std::vector<int> gens) : gens(gens) {
       add_row();
+
+      gen_inds = std::vector<int>(gens[gens.size() - 1] + 1, -1);
+      for (int i = 0; i < gens.size(); i++) {
+         gen_inds[gens[i]] = i;
+      }
    }
 
    [[nodiscard]] int gen_index(int gen) const {
-      for (unsigned i = 0; i < gens.size(); ++i)
-         if (gens[i] == gen)
-            return i;
-
-      throw std::logic_error("Referencing nonexistant generator");
+      if (gen >= gen_inds.size())
+         throw std::logic_error("Referencing nonexistant generator (too large)");
+      int i = gen_inds[gen];
+      if (i < 0)
+         throw std::logic_error("Referencing nonexistant generator (not present)");
+      return i;
    }
 
    void add_row() {
