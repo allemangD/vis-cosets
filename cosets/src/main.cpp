@@ -52,9 +52,9 @@ public:
       u_view = glGetUniformLocation(program, "view");
       u_color = glGetUniformLocation(program, "color");
 
-      const Mults &mults = schlafli({5,3,3});
-//      const glm::vec4 ident = center(mults);
-      const glm::vec4 ident = identity(mults, {1,});
+      const Mults &mults = schlafli({3, 4, 3});
+      const glm::vec4 ident = center(mults);
+//      const glm::vec4 ident = identity(mults, {10, .1, .1, .5});
       std::cout << "Dimension: " << mults.num_gens << std::endl;
 
       std::cout << "Generation times: " << std::endl;
@@ -168,8 +168,7 @@ public:
          0.0, c2, 0.0, s2,
          -s1, 0.0, c1, 0.0,
          0.0, -s2, 0.0, c2
-      )
-      ;
+      );
 
       glUseProgram(program);
       glUniformMatrix4fv(u_proj, 1, false, glm::value_ptr(proj));

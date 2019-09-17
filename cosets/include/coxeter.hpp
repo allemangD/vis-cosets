@@ -20,9 +20,9 @@ struct Mults {
 
    [[nodiscard]] std::vector<int> relation(int a, int b) const;
 
-   [[nodiscard]] std::vector<std::vector<int>> relations(std::vector<int> gens) const;
+   [[nodiscard]] std::vector<std::vector<int>> relations(const std::vector<int>& gens) const;
 
-   [[nodiscard]] std::vector<std::vector<int>> irelations(Table *table, std::vector<int> gens) const;
+   [[nodiscard]] std::vector<std::vector<int>> irelations(const Table *table, const std::vector<int> &gens) const;
 };
 
 struct Table {
@@ -32,7 +32,7 @@ struct Table {
    std::vector<std::vector<int>> fwd;
    std::vector<std::vector<int>> rev;
 
-   explicit Table(std::vector<int> gens, Mults mults);
+   explicit Table(const std::vector<int> &gens, Mults mults);
 
    [[nodiscard]] int gen_index(int gen) const;
 

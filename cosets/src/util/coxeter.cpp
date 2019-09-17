@@ -34,30 +34,30 @@ std::vector<int> Mults::relation(int a, int b) const {
    return res;
 }
 
-std::vector<std::vector<int>> Mults::relations(std::vector<int> gens) const {
+std::vector<std::vector<int>> Mults::relations(const std::vector<int> &gens) const {
    std::vector<std::vector<int>> res{};
-   for (int a = 0; a < gens.size(); ++a) {
-      for (int b = a; b < gens.size(); ++b) {
+   for (int a = 0; a < (int) gens.size(); ++a) {
+      for (int b = a; b < (int) gens.size(); ++b) {
          res.push_back(relation(gens[a], gens[b]));
       }
    }
    return res;
 }
 
-std::vector<std::vector<int>> Mults::irelations(Table *table, std::vector<int> gens) const {
+std::vector<std::vector<int>> Mults::irelations(const Table *table, const std::vector<int> &gens) const {
    std::vector<std::vector<int>> rels = relations(gens);
    std::vector<std::vector<int>> irels(rels.size());
-   for (int i = 0; i < rels.size(); ++i) {
+   for (int i = 0; i < (int) rels.size(); ++i) {
       irels[i] = table->gen_index_each(rels[i]);
    }
    return irels;
 }
 
-Table::Table(const std::vector<int> gens, const Mults mults) : gens(gens), mults(mults) {
+Table::Table(const std::vector<int> &gens, const Mults mults) : gens(gens), mults(mults) {
    add_row();
 
    gen_inds = std::vector<int>(gens[gens.size() - 1] + 1, -1);
-   for (int i = 0; i < gens.size(); i++) {
+   for (int i = 0; i <(int) gens.size(); i++) {
       gen_inds[gens[i]] = i;
    }
 }
@@ -73,7 +73,7 @@ int Table::gen_index(int gen) const {
 
 std::vector<int> Table::gen_index_each(std::vector<int> rel) const {
    std::vector<int> res(rel.size(), 0);
-   for (int i = 0; i < rel.size(); ++i) {
+   for (int i = 0; i < (int)rel.size(); ++i) {
       res[i] = gen_index(rel[i]);
    }
    return res;
@@ -87,11 +87,11 @@ void Table::add_row() {
 
 int Table::add_coset() {
    for (int from = 0; from < (int) size(); ++from) {
-      for (int gen : gens) {
-         if (get(from, gen) < 0) {
+      for (int igen = 0; igen < (int) gens.size(); igen++) {
+         if (iget(from, igen) < 0) {
             int to = (int) size();
             add_row();
-            set(from, gen, to);
+            iset(from, igen, to);
             return to;
          }
       }
