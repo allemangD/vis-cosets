@@ -1,14 +1,14 @@
-#include "util/window.hpp"
-#include "util/shader.hpp"
+#include "window.hpp"
+#include "shader.hpp"
+#include "mesh.hpp"
 
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/string_cast.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 #include <vector>
+#include <iostream>
+#include <iomanip>
 #include <chrono>
-
-#include "util/mesh.hpp"
 
 using namespace std;
 

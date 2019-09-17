@@ -1,8 +1,6 @@
-#pragma once
+#include "numeric.hpp"
 
-#include <glm/glm.hpp>
-#include <vector>
-#include <algorithm>
+#include <string>
 
 glm::vec4 round(glm::vec4 f, int prec) {
    auto dec = (float) pow(10, prec);

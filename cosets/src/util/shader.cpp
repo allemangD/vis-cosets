@@ -1,9 +1,6 @@
-#pragma once
+#include "shader.hpp"
 
-#include <glad/glad.h>
-#include <string>
 #include <cstdio>
-#include <cstdlib>
 
 #include "files.hpp"
 

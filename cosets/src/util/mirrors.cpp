@@ -1,12 +1,6 @@
-#pragma once
+#include "mirrors.hpp"
 
 #include <cmath>
-#include <vector>
-#include <iostream>
-#include <glm/glm.hpp>
-#include <glm/gtx/string_cast.hpp>
-#include <iomanip>
-
 #include "numeric.hpp"
 #include "coxeter.hpp"
 

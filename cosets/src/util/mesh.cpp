@@ -1,17 +1,4 @@
-#pragma once
-
-#include "coxeter.hpp"
-#include "mirrors.hpp"
-#include "numeric.hpp"
-
-#include <vector>
-
-template<int N>
-std::vector<std::vector<int>> coxeter_rels() {
-   std::vector<std::vector<int>> rels{};
-
-   return rels;
-}
+#include "mesh.hpp"
 
 glm::vec4 identity(const std::vector<glm::vec4> &normals, const std::vector<float> &coords) {
    const std::vector<glm::vec4> corners = plane_intersections(normals);

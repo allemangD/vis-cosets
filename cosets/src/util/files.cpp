@@ -1,7 +1,6 @@
-#pragma once
+#include "files.hpp"
 
 #include <fstream>
-#include <string>
 #include <streambuf>
 
 std::string read_all_text(const std::string &file) {
