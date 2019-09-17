@@ -73,6 +73,9 @@ std::vector<int> edges(const Table *t_vert) {
             res.push_back(t_vert->apply(e, coset));
          }
       }
+
+      delete t_edge;
+      delete c_edge;
    }
 
    return res;
@@ -121,7 +124,12 @@ std::vector<int> faces(const Table *t_vert) {
                }
             }
          }
+
+         delete t_edge;
+         delete cs_edge;
       }
+
+      delete cs_face;
    }
 
    return res;

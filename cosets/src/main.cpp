@@ -53,8 +53,8 @@ public:
       u_color = glGetUniformLocation(program, "color");
 
       const Mults &mults = schlafli({3, 4, 3});
-      const glm::vec4 ident = center(mults);
-//      const glm::vec4 ident = identity(mults, {10, .1, .1, .5});
+//      const glm::vec4 ident = center(mults);
+      const glm::vec4 ident = identity(mults, {10, .1, .1, .5});
       std::cout << "Dimension: " << mults.num_gens << std::endl;
 
       std::cout << "Generation times: " << std::endl;
@@ -102,6 +102,8 @@ public:
          << "   Total: "
          << std::setw(5) << std::setprecision(3) << full_time.count()
          << std::endl;
+
+      delete t_vert;
 
       glGenBuffers(1, &verts_buf);
       glBindBuffer(GL_ARRAY_BUFFER, verts_buf);
