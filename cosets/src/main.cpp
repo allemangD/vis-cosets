@@ -16,14 +16,7 @@ class CosetsWindow : public Window {
    GLint program;
    GLuint vert_vao, edge_vao, face_vao;
 
-   GLuint verts_buf;
-   std::vector<glm::vec4> vert_data;
-
-   GLuint edges_buf;
-   std::vector<int> edge_data;
-
-   GLuint faces_buf;
-   std::vector<int> face_data;
+   Mesh *figure;
 
    GLint u_proj, u_view, u_color;
 
@@ -52,93 +45,35 @@ public:
       u_view = glGetUniformLocation(program, "view");
       u_color = glGetUniformLocation(program, "color");
 
-      const Mults &mults = schlafli({3, 4, 3});
+      const Mults &mults = schlafli({5, 3, 2});
 //      const glm::vec4 ident = center(mults);
-      const glm::vec4 ident = identity(mults, {10, .1, .1, .5});
+      const glm::vec4 ident = identity(mults, {2, .1, .1, 3});
       std::cout << "Dimension: " << mults.num_gens << std::endl;
 
-      std::cout << "Generation times: " << std::endl;
-
-      auto gen_start = std::chrono::high_resolution_clock::now();
-
-      const Table *t_vert = solve_elems(mults);
-      auto gen_solve = std::chrono::high_resolution_clock::now();
-      std::chrono::duration<double> solve_time = gen_solve - gen_start;
-      std::cout
-         << "Table: "
-         << std::setw(5) << std::setprecision(3) << solve_time.count()
-         << std::endl;
-
-
-      vert_data = vertices(t_vert, ident);
-      auto gen_vert = std::chrono::high_resolution_clock::now();
-      std::chrono::duration<double> vert_time = gen_vert - gen_solve;
-      std::cout
-         << "Vertices: "
-         << std::setw(5) << std::setprecision(3) << vert_time.count()
-         << " (" << vert_data.size() << ")"
-         << std::endl;
-
-      edge_data = edges(t_vert);
-      auto gen_edge = std::chrono::high_resolution_clock::now();
-      std::chrono::duration<double> edge_time = gen_edge - gen_vert;
-      std::cout
-         << "   Edges: "
-         << std::setw(5) << std::setprecision(3) << edge_time.count()
-         << " (" << edge_data.size() / 2 << ")"
-         << std::endl;
-
-      face_data = faces(t_vert);
-      auto gen_face = std::chrono::high_resolution_clock::now();
-      std::chrono::duration<double> face_time = gen_face - gen_edge;
-      std::cout
-         << "   Faces: "
-         << std::setw(5) << std::setprecision(3) << face_time.count()
-         << " (" << face_data.size() / 3 << ")"
-         << std::endl;
-
-      std::chrono::duration<double> full_time = gen_face - gen_start;
-      std::cout
-         << "   Total: "
-         << std::setw(5) << std::setprecision(3) << full_time.count()
-         << std::endl;
-
-      delete t_vert;
-
-      glGenBuffers(1, &verts_buf);
-      glBindBuffer(GL_ARRAY_BUFFER, verts_buf);
-      glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec4) * vert_data.size(), &vert_data[0], GL_STATIC_DRAW);
-
-      glGenBuffers(1, &edges_buf);
-      glBindBuffer(GL_ARRAY_BUFFER, edges_buf);
-      glBufferData(GL_ARRAY_BUFFER, sizeof(int) * edge_data.size(), &edge_data[0], GL_STATIC_DRAW);
-
-      glGenBuffers(1, &faces_buf);
-      glBindBuffer(GL_ARRAY_BUFFER, faces_buf);
-      glBufferData(GL_ARRAY_BUFFER, sizeof(int) * face_data.size(), &face_data[0], GL_STATIC_DRAW);
+      figure = mesh(mults, ident);
 
       glGenVertexArrays(1, &vert_vao);
       glBindVertexArray(vert_vao);
-      glBindBuffer(GL_ARRAY_BUFFER, verts_buf);
+      glBindBuffer(GL_ARRAY_BUFFER, figure->vert.name);
       glEnableVertexAttribArray(0);
       glVertexAttribPointer(0, 4, GL_FLOAT, false, 0, nullptr);
       glBindBuffer(GL_ARRAY_BUFFER, 0);
 
       glGenVertexArrays(1, &edge_vao);
       glBindVertexArray(edge_vao);
-      glBindBuffer(GL_ARRAY_BUFFER, verts_buf);
+      glBindBuffer(GL_ARRAY_BUFFER, figure->vert.name);
       glEnableVertexAttribArray(0);
       glVertexAttribPointer(0, 4, GL_FLOAT, false, 0, nullptr);
       glBindBuffer(GL_ARRAY_BUFFER, 0);
-      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, edges_buf);
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, figure->edge.name);
 
       glGenVertexArrays(1, &face_vao);
       glBindVertexArray(face_vao);
-      glBindBuffer(GL_ARRAY_BUFFER, verts_buf);
+      glBindBuffer(GL_ARRAY_BUFFER, figure->vert.name);
       glEnableVertexAttribArray(0);
       glVertexAttribPointer(0, 4, GL_FLOAT, false, 0, nullptr);
       glBindBuffer(GL_ARRAY_BUFFER, 0);
-      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, faces_buf);
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, figure->face.name);
 
       glBindVertexArray(0);
    }
@@ -188,20 +123,20 @@ public:
 
       glBindVertexArray(vert_vao);
       glUniform4f(u_color, 1, 0, 0, 1);
-      glDrawArrays(GL_POINTS, 0, vert_data.size());
+      glDrawArrays(GL_POINTS, 0, figure->vert.size);
 
       glBindVertexArray(edge_vao);
       glUniform4f(u_color, 1, 0, 0, 1);
-      glDrawElements(GL_LINES, edge_data.size(), GL_UNSIGNED_INT, 0);
+      glDrawElements(GL_LINES, figure->edge.size, GL_UNSIGNED_INT, 0);
 
       glBindVertexArray(face_vao);
       glCullFace(GL_NONE);
       glUniform4f(u_color, 1, 1, 1, 1);
-//      glDrawElements(GL_TRIANGLES, face_data.size(), GL_UNSIGNED_INT, 0);
+//      glDrawElements(GL_TRIANGLES, figure->face.size, GL_UNSIGNED_INT, 0);
 
 //      glCullFace(GL_FRONT);
 //      glUniform4f(u_color, .3, .3, 1, 1);
-//      glDrawElements(GL_TRIANGLES, face_data.size(), GL_UNSIGNED_INT, 0);
+//      glDrawElements(GL_TRIANGLES, figure->face.size, GL_UNSIGNED_INT, 0);
 
       swapbuffers();
    }

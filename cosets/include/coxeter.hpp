@@ -20,9 +20,12 @@ struct Mults {
 
    [[nodiscard]] std::vector<int> relation(int a, int b) const;
 
-   [[nodiscard]] std::vector<std::vector<int>> relations(const std::vector<int>& gens) const;
+   [[nodiscard]] std::vector<std::vector<int>> relations(const std::vector<int> &gens) const;
 
    [[nodiscard]] std::vector<std::vector<int>> irelations(const Table *table, const std::vector<int> &gens) const;
+
+   [[nodiscard]] Table *solve(const std::vector<int> &subgens) const;
+   [[nodiscard]] Table *solve(const std::vector<int> &gens, const std::vector<int> &subgens) const;
 };
 
 struct Table {
@@ -79,11 +82,11 @@ struct IRow {
    [[nodiscard]] bool learn(Table *table);
 };
 
-Table *solve(const std::vector<int> &gens, const std::vector<int> &subgens, const Mults &mults);
-
-Table *solve(const std::vector<int> &subgens, const Mults &mults);
-
-Table *solve_elems(const Mults &mults);
+//Table *solve(const std::vector<int> &gens, const std::vector<int> &subgens, const Mults &mults);
+//
+//Table *solve(const std::vector<int> &subgens, const Mults &mults);
+//
+//Table *solve_elems(const Mults &mults);
 
 Mults schlafli(const std::vector<int> &symbol);
 

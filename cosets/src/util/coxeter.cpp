@@ -57,7 +57,7 @@ Table::Table(const std::vector<int> &gens, const Mults mults) : gens(gens), mult
    add_row();
 
    gen_inds = std::vector<int>(gens[gens.size() - 1] + 1, -1);
-   for (int i = 0; i <(int) gens.size(); i++) {
+   for (int i = 0; i < (int) gens.size(); i++) {
       gen_inds[gens[i]] = i;
    }
 }
@@ -73,7 +73,7 @@ int Table::gen_index(int gen) const {
 
 std::vector<int> Table::gen_index_each(std::vector<int> rel) const {
    std::vector<int> res(rel.size(), 0);
-   for (int i = 0; i < (int)rel.size(); ++i) {
+   for (int i = 0; i < (int) rel.size(); ++i) {
       res[i] = gen_index(rel[i]);
    }
    return res;
@@ -223,9 +223,9 @@ bool IRow::learn(Table *table) {
    return false;
 }
 
-Table *solve(const std::vector<int> &gens, const std::vector<int> &subgens, const Mults &mults) {
-   auto *table = new Table(gens, mults);
-   const auto irels = mults.irelations(table, gens);
+Table *Mults::solve(const std::vector<int> &gens, const std::vector<int> &subgens) const {
+   auto *table = new Table(gens, *this);
+   const auto irels = irelations(table, gens);
 
    for (int gen : subgens)
       table->set(0, gen, 0);
@@ -260,12 +260,8 @@ Table *solve(const std::vector<int> &gens, const std::vector<int> &subgens, cons
    return table;
 }
 
-Table *solve(const std::vector<int> &subgens, const Mults &mults) {
-   return solve(all_gens(mults.num_gens), subgens, mults);
-}
-
-Table *solve_elems(const Mults &mults) {
-   return solve({}, mults);
+Table *Mults::solve(const std::vector<int> &subgens) const {
+   return this->solve(all_gens(num_gens), subgens);
 }
 
 Mults schlafli(const std::vector<int> &symbol) {
