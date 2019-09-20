@@ -9,10 +9,7 @@ add_custom_command(
 
 add_executable(${PROJECT_NAME}
         src/main.cpp
-        src/util/coxeter.cpp
         src/util/files.cpp
-        src/util/mesh.cpp
-        src/util/mirrors.cpp
         src/util/numeric.cpp
         src/util/shader.cpp
         src/util/window.cpp)
