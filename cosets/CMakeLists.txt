@@ -20,3 +20,5 @@ add_dependencies(cosets shaders)
 
 target_link_libraries(${PROJECT_NAME}
         PRIVATE glad glm glfw)
+
+add_executable(combos src/combos.cpp)

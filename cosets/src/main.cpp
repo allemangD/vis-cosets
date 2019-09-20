@@ -8,7 +8,10 @@
 #include <vector>
 #include <iostream>
 #include <iomanip>
-#include <chrono>
+
+extern "C" {
+__declspec(dllexport) int NvOptimusEnablement = 0x00000001;
+}
 
 using namespace std;
 
@@ -16,7 +19,7 @@ class CosetsWindow : public Window {
     GLint program;
     GLuint vert_vao, edge_vao, face_vao;
 
-    Mesh<4> *figure;
+    Mesh *figure;
 
     GLint u_proj, u_view, u_color;
 
@@ -45,7 +48,8 @@ public:
         u_view = glGetUniformLocation(program, "view");
         u_color = glGetUniformLocation(program, "color");
 
-        figure = new Mesh(schlafli<4>({5, 3, 3}));
+        figure = new Mesh(schlafli({5, 3, 3}));
+        figure->gen_vertices(identity(figure->t_vert->mults, {10, .5, .5, .5}));
 
         glGenVertexArrays(1, &vert_vao);
         glBindVertexArray(vert_vao);
@@ -102,13 +106,13 @@ public:
             0.0, -s2, 0.0, c2
         );
 
-        const float root_x = std::cos((t + 0) * M_PI / 2) / 2 + 0.5;
-        const float root_y = std::cos((t + 1) * M_PI / 2) / 2 + 0.5;
-        const float root_z = std::cos((t + 2) * M_PI / 2) / 2 + 0.5;
-        const float root_w = std::cos((t + 3) * M_PI / 2) / 2 + 0.5;
-
-        const glm::vec4 root = identity<4>(figure->mults, {root_x, root_y, root_z, root_w});
-        figure->gen_vertices(root);
+//        const float root_x = std::cos((t + 0) * M_PI / 2) / 2 + 0.5;
+//        const float root_y = std::cos((t + 1) * M_PI / 2) / 2 + 0.5;
+//        const float root_z = std::cos((t + 2) * M_PI / 2) / 2 + 0.5;
+//        const float root_w = std::cos((t + 3) * M_PI / 2) / 2 + 0.5;
+//
+//        const glm::vec4 root = identity(figure->mults, {root_x, root_y, root_z, root_w});
+//        figure->gen_vertices(root);
 
         glUseProgram(program);
         glUniformMatrix4fv(u_proj, 1, false, glm::value_ptr(proj));
@@ -132,9 +136,9 @@ public:
         glUniform4f(u_color, 1, 0, 0, 1);
         glDrawElements(GL_LINES, figure->edge.size, GL_UNSIGNED_INT, 0);
 
-//        glBindVertexArray(face_vao);
-//        glCullFace(GL_NONE);
-//        glUniform4f(u_color, 1, 1, 1, 1);
+//      glBindVertexArray(face_vao);
+//      glCullFace(GL_NONE);
+//      glUniform4f(u_color, 1, 1, 1, 1);
 //      glDrawElements(GL_TRIANGLES, figure->face.size, GL_UNSIGNED_INT, 0);
 
 //      glCullFace(GL_FRONT);

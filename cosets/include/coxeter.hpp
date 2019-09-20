@@ -4,18 +4,15 @@
 #include <vector>
 #include <algorithm>
 
-template<int NGENS>
 struct Mults;
-template<int NGENS>
 struct Table;
 struct IRow;
 
-template<int NGENS>
 struct Mults {
-    const int dim = NGENS;
+    const int dim;
     std::map<std::tuple<int, int>, int> mults;
 
-    Mults() {
+    explicit Mults(const int dim) : dim(dim) {
         mults = std::map<std::tuple<int, int>, int>();
     }
 
@@ -47,28 +44,34 @@ struct Mults {
         return res;
     }
 
-    [[nodiscard]] Table<NGENS> *isolve(const std::vector<int> &isubgens) const;
+    [[nodiscard]] Mults sub(const std::vector<int> &igens) const {
+        Mults res(igens.size());
+        for (int a = 0; a < (int) igens.size(); ++a) {
+            for (int b = a + 1; b < (int) igens.size(); ++b) {
+                res.set(a, b, get(igens[a], igens[b]));
+            }
+        }
+        return res;
+    }
 
-    template<int IGENS>
-    [[nodiscard]] Table<IGENS> *isolve(const int (&igens)[IGENS], const std::vector<int> &isubgens) const;
+    [[nodiscard]] Table *isolve(const std::vector<int> &isubgens) const;
 };
 
-template<int NGENS>
 struct Table {
-    const Mults<NGENS> mults;
+    const Mults mults;
     std::vector<std::vector<int>> fwd;
 
-    explicit Table(Mults<NGENS> mults) : mults(mults) {
+    explicit Table(Mults mults) : mults(mults) {
         add_row();
     }
 
     void add_row() {
-        fwd.emplace_back(NGENS, -1);
+        fwd.emplace_back(mults.dim, -1);
     }
 
     int add_coset() {
         for (int from = 0; from < (int) size(); ++from) {
-            for (int igen = 0; igen < (int) NGENS; igen++) {
+            for (int igen = 0; igen < (int) mults.dim; igen++) {
                 if (iget(from, igen) < 0) {
                     int to = (int) size();
                     add_row();
@@ -110,8 +113,7 @@ struct IRow {
         : l(rel.begin()), r(rel.end() - 1), from(cos), to(cos) {
     }
 
-    template<int NGENS>
-    [[nodiscard]] bool learn(Table<NGENS> *table) {
+    [[nodiscard]] bool learn(Table *table) {
         if (r - l == 0) {
             return false;
         }
@@ -139,24 +141,23 @@ struct IRow {
     }
 };
 
-template<int NGENS>
-Mults<NGENS> schlafli(const int(&symbol)[NGENS - 1]) {
-    Mults<NGENS> mults{};
-    for (int i = 0; i < NGENS; ++i) {
+Mults schlafli(const std::vector<int> &symbol) {
+    unsigned int dim = symbol.size();
+    Mults mults(dim + 1);
+    for (int i = 0; i < dim; ++i) {
         mults.set(i, i + 1, symbol[i]);
     }
     return mults;
 }
 
-template<int NGENS>
-Table<NGENS> *Mults<NGENS>::isolve(const std::vector<int> &isubgens) const {
-    auto *table = new Table<NGENS>(*this);
+Table *Mults::isolve(const std::vector<int> &isubgens) const {
+    auto *table = new Table(*this);
     for (int igen : isubgens)
         table->iset(0, igen, 0);
 
     std::vector<std::vector<int>> irels{};
-    for (unsigned a = 0; a < NGENS; ++a) {
-        for (unsigned b = a + 1; b < NGENS; ++b) {
+    for (unsigned a = 0; a < dim; ++a) {
+        for (unsigned b = a + 1; b < dim; ++b) {
             irels.push_back(irelation(a, b));
         }
     }
@@ -191,46 +192,3 @@ Table<NGENS> *Mults<NGENS>::isolve(const std::vector<int> &isubgens) const {
     return table;
 }
 
-template<int NGENS>
-template<int IGENS>
-Table<IGENS> *Mults<NGENS>::isolve(const int (&igens)[IGENS], const std::vector<int> &isubgens) const {
-    auto *table = new Table<IGENS>(*this);
-    for (int igen : isubgens)
-        table->iset(0, igen, 0);
-
-    std::vector<std::vector<int>> irels{};
-    for (unsigned a = 0; a < igens.size(); ++a) {
-        for (unsigned b = a + 1; b < igens.size(); ++b) {
-            irels.push_back(irelation(igens[a], igens[b]));
-        }
-    }
-
-    std::vector<IRow> irows;
-    irows.reserve(irels.size());
-    for (const auto &irel : irels)
-        irows.emplace_back(irel, 0);
-
-    while (!irows.empty()) {
-        while (true) {
-            bool learned = false;
-            for (int i = (int) irows.size() - 1; i >= 0; i--) {
-                if (irows[i].learn(table)) {
-                    learned = true;
-                    irows.erase(irows.begin() + i);
-                }
-            }
-            if (!learned)
-                break;
-        }
-
-        int i = (int) table->size();
-        if (table->add_coset() > 0) {
-            for (const auto &irel : irels)
-                irows.emplace_back(irel, i);
-        } else {
-            break;
-        }
-    }
-
-    return table;
-}

@@ -7,10 +7,9 @@
 #include "coxeter.hpp"
 #include "numeric.hpp"
 
-template<int NGENS>
-std::vector<glm::vec4> mirror(const Mults<NGENS> &mults) {
+std::vector<glm::vec4> mirror(const Mults &mults) {
     std::vector<glm::vec4> mirrors{};
-    for (int p = 0; p < NGENS; ++p) {
+    for (int p = 0; p < mults.dim; ++p) {
         glm::vec4 vp{};
         for (int m = 0; m < p; ++m) {
             glm::vec4 vq = mirrors[m];
