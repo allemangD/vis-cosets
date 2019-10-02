@@ -19,7 +19,12 @@ class CosetsWindow : public Window {
 
     GLint u_proj, u_view, u_color;
 
+    const std::vector<int> symbol;
+
 public:
+    explicit CosetsWindow(const std::vector<int> &symbol) : symbol(symbol) {
+    }
+
     void init() override {
         std::cout
             << "Graphics Information:" << std::endl
@@ -44,7 +49,7 @@ public:
         u_view = glGetUniformLocation(program, "view");
         u_color = glGetUniformLocation(program, "color");
 
-        figure = new Mesh(schlafli({5, 3, 3}));
+        figure = new Mesh(schlafli(symbol));
         figure->gen_vertices(identity(figure->t_vert->mults, {10, .5, .5, .5}));
 
         glGenVertexArrays(1, &vert_vao);
@@ -156,7 +161,13 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
-    Window *window = new CosetsWindow();
+    std::vector<int> symbol;
+    symbol.reserve(argc);
+    for (int i = 1; i < argc; ++i) {
+        symbol.push_back(std::stoi(argv[i]));
+    }
+
+    Window *window = new CosetsWindow(symbol);
     window->run();
 
     glfwTerminate();
