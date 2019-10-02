@@ -9,10 +9,6 @@
 #include <iostream>
 #include <iomanip>
 
-extern "C" {
-__declspec(dllexport) int NvOptimusEnablement = 0x00000001;
-}
-
 using namespace std;
 
 class CosetsWindow : public Window {

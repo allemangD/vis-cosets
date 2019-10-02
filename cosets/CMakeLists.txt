@@ -1,5 +1,3 @@
-project(cosets)
-
 add_custom_target(shaders ALL DEPENDS shader_output)
 add_custom_command(
         OUTPUT shader_output
@@ -7,18 +5,16 @@ add_custom_command(
         COMMENT "copying shaders"
 )
 
-add_executable(${PROJECT_NAME}
+add_executable(cosets
         src/main.cpp
         src/util/files.cpp
         src/util/numeric.cpp
         src/util/shader.cpp
         src/util/window.cpp)
 
-target_include_directories(${PROJECT_NAME} PRIVATE include)
+target_include_directories(cosets PRIVATE include)
 
 add_dependencies(cosets shaders)
 
-target_link_libraries(${PROJECT_NAME}
+target_link_libraries(cosets
         PRIVATE glad glm glfw)
-
-add_executable(combos src/combos.cpp)
