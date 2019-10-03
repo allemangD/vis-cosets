@@ -9,20 +9,26 @@
 #include <iostream>
 #include <iomanip>
 
+#ifdef _WIN32
+extern "C" {
+__attribute__((unused)) __declspec(dllexport) int NvOptimusEnablement = 0x00000001;
+}
+#endif
+
 using namespace std;
 
 class CosetsWindow : public Window {
-    GLint program;
-    GLuint vert_vao, edge_vao, face_vao;
+    GLint program{};
+    GLuint vert_vao{}, edge_vao{}, face_vao{};
 
-    Mesh *figure;
+    Mesh *figure{};
 
-    GLint u_proj, u_view, u_color;
+    GLint u_proj{}, u_view{}, u_color{};
 
     const std::vector<int> symbol;
 
 public:
-    explicit CosetsWindow(const std::vector<int> &symbol) : symbol(symbol) {
+    explicit CosetsWindow(std::vector<int> symbol) : symbol(std::move(symbol)) {
     }
 
     void init() override {
@@ -93,10 +99,10 @@ public:
         const float sc = 1.5f;
         const float ar = (float) w / (float) h;
 
-        const float c1 = std::cos(angle * 3.0);
-        const float s1 = std::sin(angle * 3.0);
-        const float c2 = std::cos(angle * 0.2);
-        const float s2 = std::sin(angle * 0.2);
+        const auto c1 = (float) std::cos(angle * 3.0);
+        const auto s1 = (float) std::sin(angle * 3.0);
+        const auto c2 = (float) std::cos(angle * 0.2);
+        const auto s2 = (float) std::sin(angle * 0.2);
 
         const glm::mat4 proj = glm::ortho(-ar * sc, ar * sc, -sc, sc, -10.f, 10.f);
         const glm::mat4 view = glm::rotate(id, angle, ax_1) * glm::rotate(id, angle, ax_2)
@@ -135,7 +141,7 @@ public:
 
         glBindVertexArray(edge_vao);
         glUniform4f(u_color, 1, 0, 0, 1);
-        glDrawElements(GL_LINES, figure->edge.size, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_LINES, figure->edge.size, GL_UNSIGNED_INT, nullptr);
 
 //      glBindVertexArray(face_vao);
 //      glCullFace(GL_NONE);
